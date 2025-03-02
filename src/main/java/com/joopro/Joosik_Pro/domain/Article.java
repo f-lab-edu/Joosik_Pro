@@ -27,7 +27,7 @@ public class Article {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private List<Opinion> opinionList = new ArrayList<>();
 
     private String content;

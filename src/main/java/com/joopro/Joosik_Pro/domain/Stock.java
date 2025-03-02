@@ -21,12 +21,6 @@ public class Stock {
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SingleStockPost> singleStockPosts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "stock1", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VsStockPost> vsStockPosts1 = new ArrayList<>();
-
-    @OneToMany(mappedBy = "stock2", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VsStockPost> vsStockPosts2 = new ArrayList<>();
-
     private String company_name;
 
     private int member_number;
@@ -44,5 +38,16 @@ public class Stock {
         stock.setTicker(ticker);
         return stock;
     }
+
+    public void addSingleStockPost(SingleStockPost post){
+        singleStockPosts.add(post);
+        post.setStock(this);
+    }
+
+    public void removeSingleStockPost(SingleStockPost post){
+        singleStockPosts.remove(post);
+        post.setStock(null);
+    }
+
 
 }

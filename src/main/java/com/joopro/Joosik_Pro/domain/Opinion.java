@@ -30,19 +30,21 @@ public class Opinion {
 
     private long dislike_sum;
 
-    public Opinion makeOpinion(String comment){
+    public Opinion makeOpinion(String comment, Member member, Article article){
         Opinion opinion = new Opinion();
         opinion.setComment(comment);
+        opinion.setArticle(article);
+        opinion.setMember(member);
         return opinion;
     }
 
     public void setArticle(Article article){
-        this.setArticle(article);
+        this.article = article;
         article.getOpinionList().add(this);
     }
 
     public void setMember(Member member){
-        this.setMember(member);
+        this.member = member;
         member.getOpinions().add(this);
     }
 
