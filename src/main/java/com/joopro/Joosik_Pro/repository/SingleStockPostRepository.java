@@ -31,7 +31,12 @@ public class SingleStockPostRepository {
                 .getResultList();
     }
 
-    public void delete(Long id) {
+    public List<SingleStockPost> findAll(){
+        return em.createQuery("SELECT s from SingleStockPost s", SingleStockPost.class)
+                .getResultList();
+    }
+
+    public void deleteById(Long id) {
         SingleStockPost post = findById(id);
         if (post != null) {
             em.remove(post);

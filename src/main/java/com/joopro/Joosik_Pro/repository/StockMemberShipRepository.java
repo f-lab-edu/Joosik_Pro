@@ -15,8 +15,12 @@ public class StockMemberShipRepository {
 
     private final EntityManager em;
 
-    public void stockMemberShip(StockMembership stockMembership){
+    public void makeStockMemberShip(StockMembership stockMembership){
         em.persist(stockMembership);
+    }
+
+    public StockMembership findStockMemberShip(Long id){
+        return em.find(StockMembership.class, id);
     }
 
     public List<Member> findSubscribeMembers(Stock stock){

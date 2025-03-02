@@ -25,6 +25,16 @@ public class StockMembership {
 
     private boolean isActive;
 
+    private void setMember(Member member){
+        this.member = member;
+        member.getMemberships().add(this);
+    }
+
+    public void setStock(Stock stock){
+        this.stock = stock;
+        stock.getMemberships().add(this);
+    }
+
     //생성 메서드
     public static StockMembership createStockMemberShip(Member member, Stock stock){
         StockMembership stockMembership = new StockMembership();
@@ -33,10 +43,6 @@ public class StockMembership {
         stockMembership.setActive(true);
         int a = stock.getMember_number();
         stock.setMember_number(a+1);
-
-        member.getMemberships().add(stockMembership);
-        stock.getMemberships().add(stockMembership);
-
         return stockMembership;
     }
 

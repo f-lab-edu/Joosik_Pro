@@ -32,9 +32,9 @@ public class Stock {
     private String sector;
 
     // 생성 메서드
-    public static Stock createStock(String companyname, String ticker, String sector){
+    public static Stock createStock(String companyName, String ticker, String sector){
         Stock stock = new Stock();
-        stock.setCompany_name(companyname);
+        stock.setCompany_name(companyName);
         stock.setTicker(ticker);
         return stock;
     }
@@ -43,11 +43,5 @@ public class Stock {
         singleStockPosts.add(post);
         post.setStock(this);
     }
-
-    public void removeSingleStockPost(SingleStockPost post){
-        singleStockPosts.remove(post);
-        post.setStock(null);
-    }
-
 
 }
