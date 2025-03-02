@@ -37,12 +37,12 @@ public class Opinion {
     }
 
     public void setArticle(Article article){
-        setArticle(article);
+        this.setArticle(article);
         article.getOpinionList().add(this);
     }
 
     public void setMember(Member member){
-        setMember(member);
+        this.setMember(member);
         member.getOpinions().add(this);
     }
 
