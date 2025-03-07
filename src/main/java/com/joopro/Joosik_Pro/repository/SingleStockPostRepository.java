@@ -31,6 +31,12 @@ public class SingleStockPostRepository {
                 .getResultList();
     }
 
+    public List<SingleStockPost> findBySimilarContent(String keyword) {
+        return em.createQuery("SELECT s FROM SingleStockPost s WHERE s.article.content LIKE :keyword", SingleStockPost.class)
+                .setParameter("keyword", "%" + keyword + "%")
+                .getResultList();
+    }
+
     public List<SingleStockPost> findAll(){
         return em.createQuery("SELECT s from SingleStockPost s", SingleStockPost.class)
                 .getResultList();

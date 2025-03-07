@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PostService {
+public class ArticleService {
 
     private final SingleStockPostRepository singleStockPostRepository;
     private final VsStockPostRepository vsStockPostRepository;
@@ -24,20 +24,14 @@ public class PostService {
         singleStockPostRepository.save(post);
     }
 
-    public SingleStockPost findSingleStockPost(Long id){
-        return singleStockPostRepository.findById(id);
-    }
 
     @Transactional
     public void saveVsStockPost(VsStockPost vsStockPost){
         vsStockPostRepository.save(vsStockPost);
     }
 
-    public VsStockPost findVsStockPost(Long id){
-        return vsStockPostRepository.findById(id);
-    }
 
-    public List<SingleStockPost> findSingleStockPostById(Long stockId){
+    public List<SingleStockPost> findSingleStockPostByStockId(Long stockId){
         return singleStockPostRepository.findByStockId(stockId);
     }
 
@@ -51,6 +45,14 @@ public class PostService {
 
     public List<VsStockPost> findAllVsStockPost(){
         return vsStockPostRepository.findAll();
+    }
+
+    public List<SingleStockPost> findSingleStockPostByContent(String keyword){
+        return singleStockPostRepository.findBySimilarContent(keyword);
+    }
+
+    public List<VsStockPost> findVsStockPostByContent(String keyword){
+        return vsStockPostRepository.findBySimilarContent(keyword);
     }
 
     @Transactional

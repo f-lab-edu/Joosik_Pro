@@ -36,6 +36,7 @@ public class Stock {
         Stock stock = new Stock();
         stock.setCompany_name(companyName);
         stock.setTicker(ticker);
+        stock.setSector(sector);
         return stock;
     }
 

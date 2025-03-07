@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true) @RequiredArgsConstructor
 public class StockService {
@@ -17,9 +19,16 @@ public class StockService {
         stockRepository.save(stock);
     }
 
-    public Stock findStock(Long id){
+    public Stock findStockById(Long id){
         return stockRepository.findStock(id);
     }
 
+    public Stock findStockByName(String name){
+        return stockRepository.findStockByName(name);
+    }
 
+
+    public List<Stock> getstocks() {
+        return stockRepository.findAllStocks();
+    }
 }

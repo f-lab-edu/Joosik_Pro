@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.repository;
 
 
+import com.joopro.Joosik_Pro.domain.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.VsStockPost;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -32,6 +33,12 @@ public class VsStockPostRepository {
 
     public List<VsStockPost> findAll() {
         return em.createQuery("SELECT v FROM VsStockPost v", VsStockPost.class)
+                .getResultList();
+    }
+
+    public List<VsStockPost> findBySimilarContent(String keyword) {
+        return em.createQuery("SELECT v FROM VsStockPost v WHERE v.article.content LIKE :keyword", VsStockPost.class)
+                .setParameter("keyword", "%" + keyword + "%")
                 .getResultList();
     }
 
