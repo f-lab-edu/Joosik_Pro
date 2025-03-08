@@ -50,9 +50,11 @@ public class MemberController {
 
     // 멤버 저장
     @PostMapping("/api/members")
-    public void saveMember(@RequestBody @Valid CreateRequestMemberDto request){
+    public Result saveMember(@RequestBody @Valid CreateRequestMemberDto request){
         Member member = Member.createMember(request.getUsername(), request.getPassword(), request.getEmail());
         Long id = memberService.join(member);
+        MemberDto returnMemberDto = new MemberDto(member.getName());
+        return new Result("success", returnMemberDto);
     }
 
 

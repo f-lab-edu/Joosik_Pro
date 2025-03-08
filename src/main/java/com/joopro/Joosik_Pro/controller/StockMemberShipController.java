@@ -4,6 +4,7 @@ import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.domain.StockMembership;
 import com.joopro.Joosik_Pro.dto.Result;
+import com.joopro.Joosik_Pro.dto.StockMemberShipDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
 import com.joopro.Joosik_Pro.dto.stockdto.MakeStockDto;
@@ -27,11 +28,13 @@ public class StockMemberShipController {
 
     //Stock 팀 등록
     @PostMapping("api/membership")
-    public void saveStockMemberShip(@RequestBody @Valid MakeStockDto makeStockDto, @RequestBody CreateRequestMemberDto createRequestMemberDto){
+    public Result saveStockMemberShip(@RequestBody @Valid MakeStockDto makeStockDto, @RequestBody CreateRequestMemberDto createRequestMemberDto){
         Stock stock = Stock.createStock(makeStockDto.getCompanyName(), makeStockDto.getTicker(), makeStockDto.getTicker());
         Member member = Member.createMember(createRequestMemberDto.getUsername(), createRequestMemberDto.getPassword(), createRequestMemberDto.getEmail());
         StockMembership stockMembership = StockMembership.createStockMemberShip(member, stock);
         stockMemberShipService.makeStockMemberShip(stockMembership);
+        StockMemberShipDto stockMemberShipDto = new StockMemberShipDto(stockMembership.getMember().getName(), stockMembership.getStock().getCompany_name());
+        return new Result("success", stockMemberShipDto);
     }
 
     // 주식 팀에 등록된 멤버 리스트 반환

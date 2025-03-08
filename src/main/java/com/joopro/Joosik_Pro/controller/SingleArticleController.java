@@ -23,12 +23,14 @@ public class SingleArticleController {
 
     // 개별 주식 글 저장
     @PostMapping("/api/singleArticle")
-    public void saveSingleStockPost(@RequestBody @Valid CreateSingleStockPostDto createSingleStockPostDto){
+    public Result saveSingleStockPost(@RequestBody @Valid CreateSingleStockPostDto createSingleStockPostDto){
         Article article = new Article();
         article.setContent(createSingleStockPostDto.getContent());
         Stock stock = stockService.findStockByName(createSingleStockPostDto.getStockName());
         SingleStockPost singleStockPost = SingleStockPost.createSingleStockPost(article, stock);
         articleService.saveSingleStockPost(singleStockPost);
+        ReturnSingleStockPostDto returnSingleStockPostDto = new ReturnSingleStockPostDto(singleStockPost.getStock().getCompany_name(), singleStockPost.getArticle().getMember().getName(), singleStockPost.getArticle().getContent());
+        return new Result("success", returnSingleStockPostDto);
     }
 
     // 개별 주식 글 내용 검색
