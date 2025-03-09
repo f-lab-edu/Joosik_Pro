@@ -20,15 +20,16 @@ public class VsStockPostRepository {
         em.persist(post);
     }
 
-    public VsStockPost findById(Long id){
+    public VsStockPost findByVsStockPostId(Long id){
         return em.find(VsStockPost.class, id);
     }
 
-    public List<VsStockPost> findByStockId(Long stockId){
+
+    public VsStockPost findVsStockPostByBelongSinglePostId(Long stockId){
         String jpql = "SELECT v FROM VsStockPost v WHERE v.stock1.id = :stockId OR v.stock2.id = :stockId";
         TypedQuery<VsStockPost> query = em.createQuery(jpql, VsStockPost.class);
         query.setParameter("stockId", stockId);
-        return query.getResultList();
+        return query.getSingleResult();
     }
 
     public List<VsStockPost> findAll() {
@@ -43,7 +44,7 @@ public class VsStockPostRepository {
     }
 
     public void deleteById(Long id){
-        em.remove(findById(id));
+        em.remove(findByVsStockPostId(id));
     }
 
 }

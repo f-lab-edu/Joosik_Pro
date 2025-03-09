@@ -13,7 +13,7 @@ public class Stock {
 
     @Id @GeneratedValue
     @Column(name = "stock_id")
-    private int id;
+    private Long id;
 
     @OneToMany(mappedBy = "stock")
     private List<StockMembership> memberships = new ArrayList<>();
