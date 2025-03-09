@@ -23,15 +23,15 @@ public class StockMemberShipRepository {
         return em.find(StockMembership.class, id);
     }
 
-    public List<Member> findSubscribeMembers(Stock stock){
-        return em.createQuery("select m from StockMembership sm join fetch sm.member m where sm.stock = :stock", Member.class)
+    public List<StockMembership> findSubscribeMembers(Stock stock){
+        return em.createQuery("select sm from StockMembership sm join fetch sm.member where sm.stock = :stock", StockMembership.class)
                 .setParameter("stock", stock)
                 .getResultList();
 
     }
 
-    public List<Stock> findSubscribeStock(Member member){
-        return em.createQuery("select s from StockMembership sm join fetch sm.stock s where sm.member = :member", Stock.class)
+    public List<StockMembership> findSubscribeStock(Member member){
+        return em.createQuery("select sm from StockMembership sm join fetch sm.stock where sm.member = :member", StockMembership.class)
                 .setParameter("member", member)
                 .getResultList();
     }

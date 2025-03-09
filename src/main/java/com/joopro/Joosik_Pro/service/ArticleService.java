@@ -31,12 +31,12 @@ public class ArticleService {
     }
 
 
-    public List<SingleStockPost> findSingleStockPostByStockId(Long stockId){
+    public SingleStockPost findSingleStockPostByStockId(Long stockId){
         return singleStockPostRepository.findByStockId(stockId);
     }
 
-    public List<VsStockPost> findVsStockPostById(Long stockId){
-        return vsStockPostRepository.findByStockId(stockId);
+    public VsStockPost findVsStockPostById(Long stockId){
+        return vsStockPostRepository.findByVsStockPostId(stockId);
     }
 
     public List<SingleStockPost> findAllSingleStockPost(){
@@ -64,7 +64,7 @@ public class ArticleService {
 
     @Transactional
     public void changeVsStockPost(Long id, Article article, Stock stock1, Stock stock2){
-        VsStockPost vsStockPost = vsStockPostRepository.findById(id);
+        VsStockPost vsStockPost = vsStockPostRepository.findByVsStockPostId(id);
         vsStockPost.setArticle(article);
         vsStockPost.setStock1(stock1);
         vsStockPost.setStock2(stock2);
