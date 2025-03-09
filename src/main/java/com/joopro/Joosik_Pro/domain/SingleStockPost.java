@@ -20,6 +20,12 @@ public class SingleStockPost {
     @JoinColumn(name = "single_stock_id")
     private Stock stock;
 
+    public static SingleStockPost createSingleStockPost(Article article, Stock stock){
+        SingleStockPost singleStockPost = new SingleStockPost();
+        singleStockPost.setArticle(article);
+        stock.addSingleStockPost(singleStockPost);
+        return singleStockPost;
+    }
 
 
 }

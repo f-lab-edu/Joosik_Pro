@@ -21,12 +21,6 @@ public class Stock {
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SingleStockPost> singleStockPosts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "stock1", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VsStockPost> vsStockPosts1 = new ArrayList<>();
-
-    @OneToMany(mappedBy = "stock2", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<VsStockPost> vsStockPosts2 = new ArrayList<>();
-
     private String company_name;
 
     private int member_number;
@@ -38,11 +32,17 @@ public class Stock {
     private String sector;
 
     // 생성 메서드
-    public static Stock createStock(String companyname, String ticker, String sector){
+    public static Stock createStock(String companyName, String ticker, String sector){
         Stock stock = new Stock();
-        stock.setCompany_name(companyname);
+        stock.setCompany_name(companyName);
         stock.setTicker(ticker);
+        stock.setSector(sector);
         return stock;
+    }
+
+    public void addSingleStockPost(SingleStockPost post){
+        singleStockPosts.add(post);
+        post.setStock(this);
     }
 
 }

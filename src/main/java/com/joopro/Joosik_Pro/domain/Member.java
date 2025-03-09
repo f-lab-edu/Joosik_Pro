@@ -30,7 +30,7 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<Article> articles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "opinion")
+    @OneToMany(mappedBy = "member")
     private List<Opinion> opinions = new ArrayList<>();
 
     // 연관관계 메서드

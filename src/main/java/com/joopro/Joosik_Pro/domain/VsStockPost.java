@@ -24,11 +24,13 @@ public class VsStockPost {
     @JoinColumn(name = "vs_article_id")
     private Article article;
 
-    public VsStockPost makeVsStock(Stock stock1, Stock stock2, Article article){
+    public VsStockPost createVsStockPost(Stock stock1, Stock stock2, Article article){
         VsStockPost vsStockPost = new VsStockPost();
         vsStockPost.setStock1(stock1);
         vsStockPost.setStock2(stock2);
         vsStockPost.setArticle(article);
+
+
         return vsStockPost;
     }
 
