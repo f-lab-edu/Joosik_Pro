@@ -47,7 +47,7 @@ public class SingleArticleController {
     // 개별 주식 글 검색
     @GetMapping("/api/singleArticle/{id}")
     public Result searchSingleStockById(@PathVariable("id") Long id){
-        SingleStockPost singleStockPost = articleService.findSingleStockPostByStockId(id);
+        SingleStockPost singleStockPost = articleService.findSingleStockPostByPostId(id);
         ReturnSingleStockPostDto returnSingleStockPostDto = new ReturnSingleStockPostDto(singleStockPost.getStock().getCompany_name(), singleStockPost.getArticle().getMember().getName(), singleStockPost.getArticle().getContent());
         return new Result("success", returnSingleStockPostDto);
     }

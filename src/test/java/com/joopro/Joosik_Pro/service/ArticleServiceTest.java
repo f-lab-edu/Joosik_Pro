@@ -36,7 +36,7 @@ class ArticleServiceTest {
         em.persist(stock);
 
         // then
-        Assertions.assertThat(singleStockPost).isEqualTo(articleService.findSingleStockPostByStockId(singleStockPost.getId()));
+        Assertions.assertThat(singleStockPost).isEqualTo(articleService.findSingleStockPostByPostId(singleStockPost.getId()));
 
     }
 
@@ -59,7 +59,7 @@ class ArticleServiceTest {
         em.persist(stock2);
 
         //then
-        Assertions.assertThat(vsStockPost).isEqualTo(articleService.findVsStockPostById(vsStockPost.getId()));
+        Assertions.assertThat(vsStockPost).isEqualTo(articleService.findVsStockPostByPostId(vsStockPost.getId()));
 
     }
 

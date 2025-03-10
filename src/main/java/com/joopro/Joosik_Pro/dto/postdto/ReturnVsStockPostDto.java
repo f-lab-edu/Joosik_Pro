@@ -5,11 +5,12 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CreateVsStockPostDto {
+public class ReturnVsStockPostDto {
 
-    private String content;
     private String firstStockName;
     private String secondStockName;
+    private String memberName;
+    private String content;
 
 
 }

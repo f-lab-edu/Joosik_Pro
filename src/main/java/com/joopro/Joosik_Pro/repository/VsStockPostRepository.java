@@ -25,11 +25,11 @@ public class VsStockPostRepository {
     }
 
 
-    public VsStockPost findVsStockPostByBelongSinglePostId(Long stockId){
+    public List<VsStockPost> findVsStockPostByBelongSinglePostId(Long stockId){
         String jpql = "SELECT v FROM VsStockPost v WHERE v.stock1.id = :stockId OR v.stock2.id = :stockId";
         TypedQuery<VsStockPost> query = em.createQuery(jpql, VsStockPost.class);
         query.setParameter("stockId", stockId);
-        return query.getSingleResult();
+        return query.getResultList();
     }
 
     public List<VsStockPost> findAll() {

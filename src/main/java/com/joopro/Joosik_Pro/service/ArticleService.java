@@ -31,12 +31,22 @@ public class ArticleService {
     }
 
 
-    public SingleStockPost findSingleStockPostByStockId(Long stockId){
+    public List<SingleStockPost> findSingleStockPostByStockId(Long stockId){
         return singleStockPostRepository.findByStockId(stockId);
     }
 
-    public VsStockPost findVsStockPostById(Long stockId){
-        return vsStockPostRepository.findByVsStockPostId(stockId);
+    public List<VsStockPost> findVsStockPostByStockId(Long stockId){
+        return vsStockPostRepository.findVsStockPostByBelongSinglePostId(stockId);
+    }
+
+
+    public SingleStockPost findSingleStockPostByPostId(Long postId){
+        return singleStockPostRepository.findById(postId);
+    }
+
+
+    public VsStockPost findVsStockPostByPostId(Long postId){
+        return vsStockPostRepository.findByVsStockPostId(postId);
     }
 
     public List<SingleStockPost> findAllSingleStockPost(){

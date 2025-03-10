@@ -27,7 +27,7 @@ public class StockMemberShipController {
     private final MemberService memberService;
 
     //Stock 팀 등록
-    @PostMapping("api/membership")
+    @PostMapping("/api/membership")
     public Result saveStockMemberShip(@RequestBody @Valid MakeStockDto makeStockDto, @RequestBody CreateRequestMemberDto createRequestMemberDto){
         Stock stock = Stock.createStock(makeStockDto.getCompanyName(), makeStockDto.getTicker(), makeStockDto.getTicker());
         Member member = Member.createMember(createRequestMemberDto.getUsername(), createRequestMemberDto.getPassword(), createRequestMemberDto.getEmail());
@@ -38,7 +38,7 @@ public class StockMemberShipController {
     }
 
     // 주식 팀에 등록된 멤버 리스트 반환
-    @GetMapping("api/membership/members/{id}")
+    @GetMapping("/api/membership/members/{id}")
     public Result findSubscribeMembers(@PathVariable("id") Long id){
         Stock stock = stockService.findStockById(id);
         List<Member> members = stockMemberShipService.findSubscribeMembers(stock);
@@ -49,7 +49,7 @@ public class StockMemberShipController {
     }
 
     // 멤버가 등록한 주식 팀 반환
-    @GetMapping("api/membership/stocks/{id}")
+    @GetMapping("/api/membership/stocks/{id}")
     public Result findSubscribeStocks(@PathVariable("id") Long id){
         Member member = memberService.findOne(id);
         List<Stock> stockList = stockMemberShipService.findSubscribeStock(member);

@@ -25,10 +25,10 @@ public class SingleStockPostRepository {
         return em.find(SingleStockPost.class, id);
     }
 
-    public SingleStockPost findByStockId(Long stockId) {
+    public List<SingleStockPost> findByStockId(Long stockId) {
         return em.createQuery("SELECT s FROM SingleStockPost s WHERE s.stock.id = :stockId", SingleStockPost.class)
                 .setParameter("stockId", stockId)
-                .getSingleResult();
+                .getResultList();
     }
 
     public List<SingleStockPost> findBySimilarContent(String keyword) {
