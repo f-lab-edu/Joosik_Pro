@@ -49,4 +49,16 @@ public class SingleStockPostRepository {
         }
     }
 
+    public void increaseViewCount(Long id) {
+        em.createQuery("UPDATE SingleStockPost s SET s.article.viewCount = s.article.viewCount + 1 WHERE s.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public List<SingleStockPost> getPopularArticles() {
+        return em.createQuery("SELECT s FROM SingleStockPost s ORDER BY s.article.viewCount DESC", SingleStockPost.class)
+                .setMaxResults(10) // 상위 10개만 가져오기
+                .getResultList();
+    }
+
 }

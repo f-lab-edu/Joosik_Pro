@@ -47,4 +47,16 @@ public class VsStockPostRepository {
         em.remove(findByVsStockPostId(id));
     }
 
+    public void increaseViewCount(Long id) {
+        em.createQuery("UPDATE VsStockPost v SET v.article.viewCount = v.article.viewCount + 1 WHERE v.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public List<VsStockPost> getPopularArticles() {
+        return em.createQuery("SELECT v FROM VsStockPost v ORDER BY v.article.viewCount DESC", VsStockPost.class)
+                .setMaxResults(10) // 상위 10개만 가져오기
+                .getResultList();
+    }
+
 }

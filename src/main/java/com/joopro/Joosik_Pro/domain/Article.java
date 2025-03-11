@@ -32,6 +32,9 @@ public class Article {
 
     private String content;
 
+    private Long viewCount;
+
     private LocalDateTime date_created;
+
 
 }
