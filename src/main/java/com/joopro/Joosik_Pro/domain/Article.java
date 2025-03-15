@@ -15,7 +15,7 @@ public class Article {
 
     @Id @GeneratedValue
     @Column(name = "article_id")
-    private int id;
+    private Long id;
 
     @OneToOne(mappedBy = "article", fetch = FetchType.LAZY)
     private VsStockPost vsStockPost;
@@ -32,6 +32,9 @@ public class Article {
 
     private String content;
 
+    private Long viewCount;
+
     private LocalDateTime date_created;
+
 
 }

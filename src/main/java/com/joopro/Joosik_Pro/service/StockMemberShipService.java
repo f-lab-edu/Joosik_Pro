@@ -21,12 +21,24 @@ public class StockMemberShipService {
         stockMemberShipRepository.makeStockMemberShip(stockMembership);
     }
 
+    public StockMembership findStockMemberShipById(Long id){
+        return stockMemberShipRepository.findStockMemberShip(id);
+    }
+
     public List<Member> findSubscribeMembers(Stock stock){
-        return stockMemberShipRepository.findSubscribeMembers(stock);
+        List<StockMembership> stockMembershipList= stockMemberShipRepository.findSubscribeMembers(stock);
+        List<Member> members = stockMembershipList.stream()
+                .map(s -> s.getMember())
+                .toList();
+        return members;
     }
 
     public List<Stock> findSubscribeStock(Member member){
-        return stockMemberShipRepository.findSubscribeStock(member);
+        List<StockMembership> stockMembershipList= stockMemberShipRepository.findSubscribeStock(member);
+        List<Stock> stocks = stockMembershipList.stream()
+                .map(s -> s.getStock())
+                .toList();
+        return stocks;
     }
 
     @Transactional

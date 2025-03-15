@@ -21,6 +21,10 @@ public class OpinionService {
         opinionRepository.save(opinion);
     }
 
+    public Opinion findByOpinionId(Long opinionId){
+        return opinionRepository.findById(opinionId);
+    }
+
     public List<Opinion> findByMemberId(Long memberId){
         return opinionRepository.findByMemberId(memberId);
     }

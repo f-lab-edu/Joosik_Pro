@@ -20,11 +20,12 @@ public class VsStockPostRepository {
         em.persist(post);
     }
 
-    public VsStockPost findById(Long id){
+    public VsStockPost findByVsStockPostId(Long id){
         return em.find(VsStockPost.class, id);
     }
 
-    public List<VsStockPost> findByStockId(Long stockId){
+
+    public List<VsStockPost> findVsStockPostByBelongSinglePostId(Long stockId){
         String jpql = "SELECT v FROM VsStockPost v WHERE v.stock1.id = :stockId OR v.stock2.id = :stockId";
         TypedQuery<VsStockPost> query = em.createQuery(jpql, VsStockPost.class);
         query.setParameter("stockId", stockId);
@@ -43,7 +44,19 @@ public class VsStockPostRepository {
     }
 
     public void deleteById(Long id){
-        em.remove(findById(id));
+        em.remove(findByVsStockPostId(id));
+    }
+
+    public void increaseViewCount(Long id) {
+        em.createQuery("UPDATE VsStockPost v SET v.article.viewCount = v.article.viewCount + 1 WHERE v.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+    }
+
+    public List<VsStockPost> getPopularArticles() {
+        return em.createQuery("SELECT v FROM VsStockPost v ORDER BY v.article.viewCount DESC", VsStockPost.class)
+                .setMaxResults(10) // 상위 10개만 가져오기
+                .getResultList();
     }
 
 }

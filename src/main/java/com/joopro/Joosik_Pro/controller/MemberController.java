@@ -29,7 +29,7 @@ public class MemberController {
     }
 
     // 멤버 아이디로 찾기
-    @GetMapping("api/members/{id}")
+    @GetMapping("/api/members/{id}")
     public Result findMemberById(@PathVariable Long id) {
         Member member = memberService.findOne(id);
         if (member == null) {
@@ -39,7 +39,7 @@ public class MemberController {
     }
 
     // 멤버 이름으로 찾기
-    @GetMapping("api/members/name")
+    @GetMapping("/api/members/name")
     public Result findMemberByName(@RequestParam String name) {
         List<Member> members = memberService.findByName(name);
         List<MemberDto> memberDtoList = members.stream()
