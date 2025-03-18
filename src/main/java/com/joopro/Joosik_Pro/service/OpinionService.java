@@ -3,6 +3,8 @@ package com.joopro.Joosik_Pro.service;
 import com.joopro.Joosik_Pro.domain.Article;
 import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.domain.Opinion;
+import com.joopro.Joosik_Pro.dto.opiniondto.CreateOpinionDto;
+import com.joopro.Joosik_Pro.dto.opiniondto.ReturnOpinionDto;
 import com.joopro.Joosik_Pro.repository.OpinionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,18 +17,42 @@ import java.util.List;
 public class OpinionService {
 
     private final OpinionRepository opinionRepository;
+    private final MemberService memberService;
+    private final SingleArticleService singleArticleService;
+    private final VsArticleService vsArticleService;
 
     @Transactional
-    public void saveOpinion(Opinion opinion){
+    public ReturnOpinionDto saveSingleArticleOpinion(CreateOpinionDto createOpinionDto, Long memberId, Long articleId){
+        Member member = memberService.findByMemberIdReturnEntity(memberId);
+        Article article;
+        article = singleArticleService.findSingleStockPostByPostIdReturnEntity(articleId).getArticle();
+        Opinion opinion = Opinion.makeOpinion(createOpinionDto.getComment(), member, article);
         opinionRepository.save(opinion);
+        ReturnOpinionDto returnOpinionDto = new ReturnOpinionDto(memberId, articleId, opinion.getId());
+        return returnOpinionDto;
+    }
+
+    @Transactional
+    public ReturnOpinionDto saveVsArticleOpinion(CreateOpinionDto createOpinionDto, Long memberId, Long articleId){
+        Member member = memberService.findByMemberIdReturnEntity(memberId);
+        Article article;
+        article = vsArticleService.findVsStockPostByPostIdReturnEntity(articleId).getArticle();
+        Opinion opinion = Opinion.makeOpinion(createOpinionDto.getComment(), member, article);
+        opinionRepository.save(opinion);
+        ReturnOpinionDto returnOpinionDto = new ReturnOpinionDto(memberId, articleId, opinion.getId());
+        return returnOpinionDto;
     }
 
     public Opinion findByOpinionId(Long opinionId){
         return opinionRepository.findById(opinionId);
     }
 
-    public List<Opinion> findByMemberId(Long memberId){
-        return opinionRepository.findByMemberId(memberId);
+    public List<ReturnOpinionDto> findOpinionByMemberId(Long memberId){
+        List<Opinion> opinionList= opinionRepository.findOpinionByMemberId(memberId);
+        List<ReturnOpinionDto> returnOpinionDtos = opinionList.stream()
+                .map(o -> new ReturnOpinionDto(o.getMember().getId(), o.getArticle().getId(), o.getId()))
+                .toList();
+        return returnOpinionDtos;
     }
 
     @Transactional

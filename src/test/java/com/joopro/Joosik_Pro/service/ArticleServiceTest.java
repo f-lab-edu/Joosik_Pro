@@ -13,13 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @Transactional
 class ArticleServiceTest {
 
-    @Autowired ArticleService articleService;
+    @Autowired
+    SingleArticleService singleArticleService;
     @Autowired EntityManager em;
 
     @Test
@@ -31,12 +30,12 @@ class ArticleServiceTest {
         SingleStockPost singleStockPost = SingleStockPost.createSingleStockPost(article, stock);
 
         // when
-        articleService.saveSingleStockPost(singleStockPost);
+        singleArticleService.saveSingleStockPost(singleStockPost);
         em.persist(article);
         em.persist(stock);
 
         // then
-        Assertions.assertThat(singleStockPost).isEqualTo(articleService.findSingleStockPostByPostId(singleStockPost.getId()));
+        Assertions.assertThat(singleStockPost).isEqualTo(singleArticleService.findSingleStockPostByPostId(singleStockPost.getId()));
 
     }
 
@@ -53,13 +52,13 @@ class ArticleServiceTest {
         VsStockPost vsStockPost = VsStockPost.createVsStockPost(stock, stock2, article);
 
         //when
-        articleService.saveVsStockPost(vsStockPost);
+        singleArticleService.saveVsStockPost(vsStockPost);
         em.persist(article);
         em.persist(stock);
         em.persist(stock2);
 
         //then
-        Assertions.assertThat(vsStockPost).isEqualTo(articleService.findVsStockPostByPostId(vsStockPost.getId()));
+        Assertions.assertThat(vsStockPost).isEqualTo(singleArticleService.findVsStockPostByPostId(vsStockPost.getId()));
 
     }
 
@@ -89,7 +88,7 @@ class ArticleServiceTest {
         em.persist(stock2);
 
         //when
-        List<SingleStockPost> Nvdias = articleService.findSingleStockPostByContent("엔비디아");
+        List<SingleStockPost> Nvdias = singleArticleService.findSingleStockPostByContent("엔비디아");
 
         //then
         Assertions.assertThat(Nvdias).contains(singleStockPost2, singleStockPost3);
@@ -121,10 +120,10 @@ class ArticleServiceTest {
         VsStockPost vsStockPost4 = VsStockPost.createVsStockPost(stock, stock2, article4);
 
 
-        articleService.saveVsStockPost(vsStockPost);
-        articleService.saveVsStockPost(vsStockPost2);
-        articleService.saveVsStockPost(vsStockPost3);
-        articleService.saveVsStockPost(vsStockPost4);
+        singleArticleService.saveVsStockPost(vsStockPost);
+        singleArticleService.saveVsStockPost(vsStockPost2);
+        singleArticleService.saveVsStockPost(vsStockPost3);
+        singleArticleService.saveVsStockPost(vsStockPost4);
         em.persist(article);
         em.persist(article2);
         em.persist(article3);
@@ -133,7 +132,7 @@ class ArticleServiceTest {
         em.persist(stock2);
 
         //when
-        List<VsStockPost> Nvdias = articleService.findVsStockPostByContent("엔비디아");
+        List<VsStockPost> Nvdias = singleArticleService.findVsStockPostByContent("엔비디아");
 
         //then
         Assertions.assertThat(Nvdias).contains(vsStockPost3, vsStockPost4);
@@ -154,7 +153,7 @@ class ArticleServiceTest {
         article.setContent("엔비디아를 삽시다");
 
         //when
-        articleService.changeSingleStockPost(singleStockPost1.getId(), article, stock);
+        singleArticleService.changeSingleStockPost(singleStockPost1.getId(), article, stock);
 
         //then
         Assertions.assertThat(singleStockPost1.getArticle().getContent()).isEqualTo("엔비디아를 삽시다");
@@ -176,8 +175,8 @@ class ArticleServiceTest {
 
         //when
         VsStockPost vsStockPost = VsStockPost.createVsStockPost(stock, stock2, article);
-        articleService.saveVsStockPost(vsStockPost);
-        articleService.changeVsStockPost(vsStockPost.getId(), article, stock, stock2);
+        singleArticleService.saveVsStockPost(vsStockPost);
+        singleArticleService.changeVsStockPost(vsStockPost.getId(), article, stock, stock2);
 
         //then
         Assertions.assertThat(vsStockPost.getArticle().getContent()).isEqualTo("엔비디아를 삽시다");

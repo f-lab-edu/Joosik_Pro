@@ -21,39 +21,31 @@ public class MemberController {
     // 멤버 전체 리스트 반환
     @GetMapping("/api/members")
     public Result members(){
-        List<Member> members = memberService.getMembers();
-        List<MemberDto> memberDtoList = members.stream()
-                .map(m-> new MemberDto(m.getName()))
-                .toList();
+        List<MemberDto> memberDtoList = memberService.getMembers();
         return new Result("success", memberDtoList);
     }
 
     // 멤버 아이디로 찾기
     @GetMapping("/api/members/{id}")
     public Result findMemberById(@PathVariable Long id) {
-        Member member = memberService.findOne(id);
-        if (member == null) {
+        MemberDto memberDto = memberService.findByMemberId(id);
+        if (memberDto == null) {
             return new Result("fail",null);
         }
-        return new Result("success", member);
+        return new Result("success", memberDto);
     }
 
     // 멤버 이름으로 찾기
     @GetMapping("/api/members/name")
     public Result findMemberByName(@RequestParam String name) {
-        List<Member> members = memberService.findByName(name);
-        List<MemberDto> memberDtoList = members.stream()
-                .map(m-> new MemberDto(m.getName()))
-                .toList();
+        List<MemberDto> memberDtoList = memberService.findByMemberName(name);
         return new Result("success", memberDtoList);
     }
 
     // 멤버 저장
     @PostMapping("/api/members")
     public Result saveMember(@RequestBody @Valid CreateRequestMemberDto request){
-        Member member = Member.createMember(request.getUsername(), request.getPassword(), request.getEmail());
-        Long id = memberService.join(member);
-        MemberDto returnMemberDto = new MemberDto(member.getName());
+        MemberDto returnMemberDto = memberService.join(request);
         return new Result("success", returnMemberDto);
     }
 

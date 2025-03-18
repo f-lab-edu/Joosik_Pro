@@ -1,6 +1,8 @@
 package com.joopro.Joosik_Pro.service;
 
 import com.joopro.Joosik_Pro.domain.Member;
+import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
+import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,9 +18,11 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public Long join(Member member){
+    public MemberDto join(CreateRequestMemberDto request){
+        Member member = Member.createMember(request.getUsername(), request.getPassword(), request.getEmail());
         memberRepository.save(member);
-        return member.getId();
+        MemberDto returnMemberDto = new MemberDto(member.getName());
+        return returnMemberDto;
     }
 
     @Transactional
@@ -29,16 +33,30 @@ public class MemberService {
         member.setEmail(email);
     }
 
-    public List<Member> getMembers(){
-        return memberRepository.findAll();
+    public List<MemberDto> getMembers(){
+        List<Member> members = memberRepository.findAll();
+        List<MemberDto> memberDtoList = members.stream()
+                .map(m-> new MemberDto(m.getName()))
+                .toList();
+        return memberDtoList;
     }
 
-    public Member findOne(Long memberId){
+    public MemberDto findByMemberId(Long memberId){
+        Member member = memberRepository.findOne(memberId);
+        MemberDto memberDto = new MemberDto(member.getName());
+        return memberDto;
+    }
+
+    public Member findByMemberIdReturnEntity(Long memberId){
         return memberRepository.findOne(memberId);
     }
 
-    public List<Member> findByName(String name){
-        return memberRepository.findByName(name);
+    public List<MemberDto> findByMemberName(String name){
+        List<Member> members = memberRepository.findByName(name);
+        List<MemberDto> memberDtoList = members.stream()
+                .map(m-> new MemberDto(m.getName()))
+                .toList();
+        return memberDtoList;
     }
 
 }
