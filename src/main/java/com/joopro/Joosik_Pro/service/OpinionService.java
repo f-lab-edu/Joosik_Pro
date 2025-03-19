@@ -26,9 +26,13 @@ public class OpinionService {
         Member member = memberService.findByMemberIdReturnEntity(memberId);
         Article article;
         article = singleArticleService.findSingleStockPostByPostIdReturnEntity(articleId).getArticle();
-        Opinion opinion = Opinion.makeOpinion(createOpinionDto.getComment(), member, article);
+        Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), article, member);
         opinionRepository.save(opinion);
-        ReturnOpinionDto returnOpinionDto = new ReturnOpinionDto(memberId, articleId, opinion.getId());
+        ReturnOpinionDto returnOpinionDto = ReturnOpinionDto.builder()
+                .memberId(memberId)
+                .articleId(articleId)
+                .opinionId(opinion.getId())
+                .build();
         return returnOpinionDto;
     }
 
@@ -37,9 +41,13 @@ public class OpinionService {
         Member member = memberService.findByMemberIdReturnEntity(memberId);
         Article article;
         article = vsArticleService.findVsStockPostByPostIdReturnEntity(articleId).getArticle();
-        Opinion opinion = Opinion.makeOpinion(createOpinionDto.getComment(), member, article);
+        Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), article, member);
         opinionRepository.save(opinion);
-        ReturnOpinionDto returnOpinionDto = new ReturnOpinionDto(memberId, articleId, opinion.getId());
+        ReturnOpinionDto returnOpinionDto = ReturnOpinionDto.builder()
+                .memberId(memberId)
+                .articleId(articleId)
+                .opinionId(opinion.getId())
+                .build();
         return returnOpinionDto;
     }
 
@@ -50,7 +58,11 @@ public class OpinionService {
     public List<ReturnOpinionDto> findOpinionByMemberId(Long memberId){
         List<Opinion> opinionList= opinionRepository.findOpinionByMemberId(memberId);
         List<ReturnOpinionDto> returnOpinionDtos = opinionList.stream()
-                .map(o -> new ReturnOpinionDto(o.getMember().getId(), o.getArticle().getId(), o.getId()))
+                .map(o -> ReturnOpinionDto.builder()
+                        .memberId(o.getMember().getId())
+                        .articleId(o.getArticle().getId())
+                        .opinionId(o.getId())
+                        .build())
                 .toList();
         return returnOpinionDtos;
     }
@@ -58,7 +70,6 @@ public class OpinionService {
     @Transactional
     public void changeOpinion(Long id, String comment, Member member, Article article){
         Opinion opinion = opinionRepository.findById(id);
-        opinion.setComment(comment);
         opinion.setMember(member);
         opinion.setArticle(article);
     }

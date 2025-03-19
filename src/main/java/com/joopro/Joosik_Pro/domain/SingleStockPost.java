@@ -1,11 +1,10 @@
 package com.joopro.Joosik_Pro.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Entity
-@Getter @Setter
+@Entity @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
 public class SingleStockPost {
 
     @Id @GeneratedValue
@@ -17,14 +16,19 @@ public class SingleStockPost {
     private Article article;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "single_stock_id")
+    @JoinColumn(name = "stock_id")
     private Stock stock;
 
-    public static SingleStockPost createSingleStockPost(Article article, Stock stock){
-        SingleStockPost singleStockPost = new SingleStockPost();
-        singleStockPost.setArticle(article);
-        stock.addSingleStockPost(singleStockPost);
-        return singleStockPost;
+    // 연관관계 편의 메서드
+    public void setArticle(Article article){
+        this.article = article;
+        article.assignSingleStockPost(this);
+    }
+
+    // 연관관계 편의 메서드
+    public void setStock(Stock stock){
+        this.stock = stock;
+        stock.addSingleStockPost(this);
     }
 
 

@@ -19,31 +19,36 @@ public class MemberService {
 
     @Transactional
     public MemberDto join(CreateRequestMemberDto request){
-        Member member = Member.createMember(request.getUsername(), request.getPassword(), request.getEmail());
+        Member member = Member.builder()
+                .name(request.getUsername())
+                .email(request.getEmail())
+                .build();
         memberRepository.save(member);
-        MemberDto returnMemberDto = new MemberDto(member.getName());
-        return returnMemberDto;
+        MemberDto memberDto = MemberDto.builder()
+                .name(member.getName())
+                .build();
+        return memberDto;
     }
 
     @Transactional
     public void update(Long id, String name, String password, String email){
         Member member = memberRepository.findOne(id);
-        member.setName(name);
-        member.setPassword(password);
-        member.setEmail(email);
+        member.updateMember(name, password, email);
     }
 
     public List<MemberDto> getMembers(){
         List<Member> members = memberRepository.findAll();
         List<MemberDto> memberDtoList = members.stream()
-                .map(m-> new MemberDto(m.getName()))
+                .map(m-> MemberDto.builder().name(m.getName()).build())
                 .toList();
         return memberDtoList;
     }
 
     public MemberDto findByMemberId(Long memberId){
         Member member = memberRepository.findOne(memberId);
-        MemberDto memberDto = new MemberDto(member.getName());
+        MemberDto memberDto = MemberDto.builder()
+                .name(member.getName())
+                .build();
         return memberDto;
     }
 
@@ -51,10 +56,10 @@ public class MemberService {
         return memberRepository.findOne(memberId);
     }
 
-    public List<MemberDto> findByMemberName(String name){
+    public List<MemberDto> findMemberByName(String name){
         List<Member> members = memberRepository.findByName(name);
         List<MemberDto> memberDtoList = members.stream()
-                .map(m-> new MemberDto(m.getName()))
+                .map(m-> MemberDto.builder().name(m.getName()).build())
                 .toList();
         return memberDtoList;
     }

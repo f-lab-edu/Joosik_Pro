@@ -6,7 +6,9 @@ import com.joopro.Joosik_Pro.domain.StockMembership;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.dto.StockMemberShipDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
+import com.joopro.Joosik_Pro.dto.memberdto.FindMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
+import com.joopro.Joosik_Pro.dto.stockdto.FindStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.MakeStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDto;
 import com.joopro.Joosik_Pro.service.MemberService;
@@ -26,8 +28,8 @@ public class StockMemberShipController {
 
     //Stock 팀 등록
     @PostMapping("/api/membership")
-    public Result saveStockMemberShip(@RequestBody @Valid MakeStockDto makeStockDto, @RequestBody CreateRequestMemberDto createRequestMemberDto){
-        StockMemberShipDto stockMemberShipDto = stockMemberShipService.saveStockMemberShip(makeStockDto, createRequestMemberDto);
+    public Result saveStockMemberShip(@RequestBody @Valid FindMemberDto findMemberDto, @RequestBody FindStockDto findStockDto){
+        StockMemberShipDto stockMemberShipDto = stockMemberShipService.saveStockMemberShip(findMemberDto, findStockDto);
         return new Result("success", stockMemberShipDto);
     }
 

@@ -17,8 +17,6 @@ public class StockService {
 
     private final StockRepository stockRepository;
 
-
-
     @Transactional
     public void saveStock(Stock stock){
         stockRepository.save(stock);
@@ -26,6 +24,9 @@ public class StockService {
 
     public StockDetailDto findStockById(Long id){
         Stock stock = stockRepository.findStockById(id);
+
+
+
         StockDetailDto stockDetailDto = new StockDetailDto();
         return stockDetailDto;
     }
@@ -36,7 +37,13 @@ public class StockService {
 
     public StockDto findStockByCompanyName(String name){
         Stock stock = stockRepository.findStockByCompanyName(name);
-        StockDto stockDto = new StockDto(stock.getCompany_name(), stock.getMember_number(), stock.getArticle_number(), stock.getTicker(), stock.getSector());
+        StockDto stockDto = StockDto.builder()
+                .companyName(stock.getCompanyName())
+                .memberNumber(stock.getMemberNumber())
+                .articleNumber(stock.getArticleNumber())
+                .ticker(stock.getTicker())
+                .sector(stock.getSector())
+                .build();
         return stockDto;
     }
 
@@ -48,8 +55,14 @@ public class StockService {
     public List<StockDto> getAllStocks() {
         List<Stock> stockList = stockRepository.findAllStocks();
         List<StockDto> stockDtoList = stockList.stream()
-                .map(m -> new StockDto(m.getCompany_name(), m.getMember_number(), m.getArticle_number(), m.getTicker(), m.getSector()))
-                .toList();
+                .map(m -> StockDto.builder()
+                        .companyName(m.getCompanyName())
+                        .memberNumber(m.getMemberNumber())
+                        .articleNumber(m.getArticleNumber())
+                        .ticker(m.getTicker())
+                        .sector(m.getSector())
+                        .build()
+                ).toList();
         return stockDtoList;
     }
 

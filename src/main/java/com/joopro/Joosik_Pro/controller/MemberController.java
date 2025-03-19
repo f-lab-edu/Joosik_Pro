@@ -3,7 +3,6 @@ package com.joopro.Joosik_Pro.controller;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
 import com.joopro.Joosik_Pro.dto.Result;
-import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +37,7 @@ public class MemberController {
     // 멤버 이름으로 찾기
     @GetMapping("/api/members/name")
     public Result findMemberByName(@RequestParam String name) {
-        List<MemberDto> memberDtoList = memberService.findByMemberName(name);
+        List<MemberDto> memberDtoList = memberService.findMemberByName(name);
         return new Result("success", memberDtoList);
     }
 

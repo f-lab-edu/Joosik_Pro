@@ -5,7 +5,9 @@ import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.domain.StockMembership;
 import com.joopro.Joosik_Pro.dto.StockMemberShipDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
+import com.joopro.Joosik_Pro.dto.memberdto.FindMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
+import com.joopro.Joosik_Pro.dto.stockdto.FindStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.MakeStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDto;
 import com.joopro.Joosik_Pro.repository.StockMemberShipRepository;
@@ -24,12 +26,12 @@ public class StockMemberShipService {
     private final MemberService memberService;
 
     @Transactional
-    public StockMemberShipDto saveStockMemberShip(MakeStockDto makeStockDto, CreateRequestMemberDto createRequestMemberDto){
-        Stock stock = Stock.createStock(makeStockDto.getCompanyName(), makeStockDto.getTicker(), makeStockDto.getTicker());
-        Member member = Member.createMember(createRequestMemberDto.getUsername(), createRequestMemberDto.getPassword(), createRequestMemberDto.getEmail());
+    public StockMemberShipDto saveStockMemberShip(FindMemberDto findMemberDto, FindStockDto findStockDto){
+        Member member = memberService.findByMemberIdReturnEntity(findMemberDto.getMemberId());
+        Stock stock = stockService.findStockByIdReturnEntity(findStockDto.getStockId());
         StockMembership stockMembership = StockMembership.createStockMemberShip(member, stock);
         stockMemberShipRepository.makeStockMemberShip(stockMembership);
-        StockMemberShipDto stockMemberShipDto = new StockMemberShipDto(stockMembership.getMember().getName(), stockMembership.getStock().getCompany_name());
+        StockMemberShipDto stockMemberShipDto = new StockMemberShipDto(stockMembership.getMember().getName(), stockMembership.getStock().getCompanyName());
         return stockMemberShipDto;
     }
 
@@ -56,7 +58,13 @@ public class StockMemberShipService {
                 .map(s -> s.getStock())
                 .toList();
         List<StockDto> stockDtoList = stockList.stream()
-                .map(m -> new StockDto(m.getCompany_name(), m.getMember_number(), m.getArticle_number(), m.getTicker(), m.getSector()))
+                .map(m -> StockDto.builder()
+                        .companyName(m.getCompanyName())
+                        .memberNumber(m.getMemberNumber())
+                        .articleNumber(m.getArticleNumber())
+                        .ticker(m.getTicker())
+                        .sector(m.getSector())
+                        .build())
                 .toList();
         return stockDtoList;
     }

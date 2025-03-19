@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.service;
 
 import com.joopro.Joosik_Pro.domain.Article;
+import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.domain.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.dto.postdto.CreateSingleStockPostDto;
@@ -19,29 +20,43 @@ public class SingleArticleService {
 
     private final SingleStockPostRepository singleStockPostRepository;
     private final StockService stockService;
+    private final MemberService memberService;
 
     @Transactional
     public ReturnSingleStockPostDto saveSingleStockPost(CreateSingleStockPostDto createSingleStockPostDto){
-        Article article = new Article();
-        article.setContent(createSingleStockPostDto.getContent());
+
         Stock stock = stockService.findStockByCompanyNameReturnEntity(createSingleStockPostDto.getStockName());
-        SingleStockPost singleStockPost = SingleStockPost.createSingleStockPost(article, stock);
+        Member member = memberService.findByMemberIdReturnEntity(createSingleStockPostDto.getUserId());
+        SingleStockPost singleStockPost = Article.createSingleStockPost(createSingleStockPostDto.getContent(), stock, member);
+
         singleStockPostRepository.save(singleStockPost);
-        ReturnSingleStockPostDto returnSingleStockPostDto = new ReturnSingleStockPostDto(singleStockPost.getStock().getCompany_name(), singleStockPost.getArticle().getMember().getName(), singleStockPost.getArticle().getContent());
+
+        ReturnSingleStockPostDto returnSingleStockPostDto = ReturnSingleStockPostDto.builder()
+                .stockName(singleStockPost.getStock().getCompanyName())
+                .memberName(singleStockPost.getArticle().getMember().getName())
+                .content(singleStockPost.getArticle().getContent())
+                .build();
         return returnSingleStockPostDto;
     }
 
     public List<ReturnSingleStockPostDto> findSingleStockPostByStockId(Long stockId){
         List<SingleStockPost> singleStockPostList = singleStockPostRepository.findByStockId(stockId);
         List<ReturnSingleStockPostDto> returnSingleStockPostDtos = singleStockPostList.stream()
-                .map(s -> new ReturnSingleStockPostDto(s.getStock().getCompany_name(), s.getArticle().getMember().getName(), s.getArticle().getContent()))
+                .map(s -> ReturnSingleStockPostDto.builder()
+                        .stockName(s.getStock().getCompanyName())
+                        .memberName(s.getArticle().getMember().getName())
+                        .content(s.getArticle().getContent()).build())
                 .toList();
         return returnSingleStockPostDtos;
     }
 
     public ReturnSingleStockPostDto findSingleStockPostByPostId(Long postId){
         SingleStockPost singleStockPost = singleStockPostRepository.findById(postId);
-        ReturnSingleStockPostDto returnSingleStockPostDto = new ReturnSingleStockPostDto(singleStockPost.getStock().getCompany_name(), singleStockPost.getArticle().getMember().getName(), singleStockPost.getArticle().getContent());
+        ReturnSingleStockPostDto returnSingleStockPostDto = ReturnSingleStockPostDto.builder()
+                .stockName(singleStockPost.getStock().getCompanyName())
+                .memberName(singleStockPost.getArticle().getMember().getName())
+                .content(singleStockPost.getArticle().getContent())
+                .build();
         return returnSingleStockPostDto;
     }
 
@@ -52,7 +67,10 @@ public class SingleArticleService {
     public List<ReturnSingleStockPostDto> findAllSingleStockPost(){
         List<SingleStockPost> singleStockPostList = singleStockPostRepository.findAllSingleStockPost();
         List<ReturnSingleStockPostDto> singleStockPostDtos = singleStockPostList.stream()
-                .map(s -> new ReturnSingleStockPostDto(s.getStock().getCompany_name(), s.getArticle().getMember().getName(), s.getArticle().getContent()))
+                .map(s -> ReturnSingleStockPostDto.builder()
+                        .stockName(s.getStock().getCompanyName())
+                        .memberName(s.getArticle().getMember().getName())
+                        .content(s.getArticle().getContent()).build())
                 .toList();
         return singleStockPostDtos;
     }
@@ -60,7 +78,10 @@ public class SingleArticleService {
     public List<ReturnSingleStockPostDto> findSingleStockPostByContent(String keyword){
         List<SingleStockPost> singleStockPostList = singleStockPostRepository.findBySimilarContent(keyword);
         List<ReturnSingleStockPostDto> returnSingleStockPostDtos = singleStockPostList.stream()
-                .map(s -> new ReturnSingleStockPostDto(s.getStock().getCompany_name(), s.getArticle().getMember().getName(), s.getArticle().getContent()))
+                .map(s -> ReturnSingleStockPostDto.builder()
+                        .stockName(s.getStock().getCompanyName())
+                        .memberName(s.getArticle().getMember().getName())
+                        .content(s.getArticle().getContent()).build())
                 .toList();
         return returnSingleStockPostDtos;
 
