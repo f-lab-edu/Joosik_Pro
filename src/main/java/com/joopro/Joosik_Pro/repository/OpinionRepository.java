@@ -23,7 +23,7 @@ public class OpinionRepository {
         return em.find(Opinion.class, id);
    }
 
-    public List<Opinion> findByMemberId(Long memberId) {
+    public List<Opinion> findOpinionByMemberId(Long memberId) {
         return em.createQuery("SELECT o FROM Opinion o WHERE o.member.id = :memberId", Opinion.class)
                 .setParameter("memberId", memberId)
                 .getResultList();

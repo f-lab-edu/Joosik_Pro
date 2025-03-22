@@ -20,7 +20,7 @@ public class StockRepository {
         em.persist(stock);
     }
 
-    public Stock findStock(Long id){
+    public Stock findStockById(Long id){
         return em.find(Stock.class, id);
     }
 
@@ -29,7 +29,7 @@ public class StockRepository {
                 .getResultList();
     }
 
-    public Stock findStockByName(String name){
+    public Stock findStockByCompanyName(String name){
         return em.createQuery("select s from Stock s where s.company_name = :name", Stock.class)
                 .setParameter("name", name)
                 .getSingleResult();

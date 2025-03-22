@@ -6,7 +6,9 @@ import com.joopro.Joosik_Pro.domain.StockMembership;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.dto.StockMemberShipDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
+import com.joopro.Joosik_Pro.dto.memberdto.FindMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
+import com.joopro.Joosik_Pro.dto.stockdto.FindStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.MakeStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDto;
 import com.joopro.Joosik_Pro.service.MemberService;
@@ -23,45 +25,27 @@ import java.util.List;
 public class StockMemberShipController {
 
     private final StockMemberShipService stockMemberShipService;
-    private final StockService stockService;
-    private final MemberService memberService;
 
     //Stock 팀 등록
     @PostMapping("/api/membership")
-    public Result saveStockMemberShip(@RequestBody @Valid MakeStockDto makeStockDto, @RequestBody CreateRequestMemberDto createRequestMemberDto){
-        Stock stock = Stock.createStock(makeStockDto.getCompanyName(), makeStockDto.getTicker(), makeStockDto.getTicker());
-        Member member = Member.createMember(createRequestMemberDto.getUsername(), createRequestMemberDto.getPassword(), createRequestMemberDto.getEmail());
-        StockMembership stockMembership = StockMembership.createStockMemberShip(member, stock);
-        stockMemberShipService.makeStockMemberShip(stockMembership);
-        StockMemberShipDto stockMemberShipDto = new StockMemberShipDto(stockMembership.getMember().getName(), stockMembership.getStock().getCompany_name());
+    public Result saveStockMemberShip(@RequestBody @Valid FindMemberDto findMemberDto, @RequestBody FindStockDto findStockDto){
+        StockMemberShipDto stockMemberShipDto = stockMemberShipService.saveStockMemberShip(findMemberDto, findStockDto);
         return new Result("success", stockMemberShipDto);
     }
 
     // 주식 팀에 등록된 멤버 리스트 반환
     @GetMapping("/api/membership/members/{id}")
     public Result findSubscribeMembers(@PathVariable("id") Long id){
-        Stock stock = stockService.findStockById(id);
-        List<Member> members = stockMemberShipService.findSubscribeMembers(stock);
-        List<MemberDto> memberDtoList = members.stream()
-                .map(m-> new MemberDto(m.getName()))
-                .toList();
+        List<MemberDto> memberDtoList = stockMemberShipService.findSubscribeMembers(id);
         return new Result("success", memberDtoList);
     }
 
     // 멤버가 등록한 주식 팀 반환
     @GetMapping("/api/membership/stocks/{id}")
     public Result findSubscribeStocks(@PathVariable("id") Long id){
-        Member member = memberService.findOne(id);
-        List<Stock> stockList = stockMemberShipService.findSubscribeStock(member);
-        List<StockDto> stockDtoList = stockList.stream()
-                .map(m -> new StockDto(m.getCompany_name(), m.getMember_number(), m.getArticle_number(), m.getTicker(), m.getSector()))
-                .toList();
+        List<StockDto> stockDtoList = stockMemberShipService.findSubscribeStock(id);
         return new Result("success", stockDtoList);
     }
-
-
-
-
 
 
 }

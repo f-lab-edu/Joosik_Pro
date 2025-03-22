@@ -37,7 +37,7 @@ public class SingleStockPostRepository {
                 .getResultList();
     }
 
-    public List<SingleStockPost> findAll(){
+    public List<SingleStockPost> findAllSingleStockPost(){
         return em.createQuery("SELECT s from SingleStockPost s", SingleStockPost.class)
                 .getResultList();
     }

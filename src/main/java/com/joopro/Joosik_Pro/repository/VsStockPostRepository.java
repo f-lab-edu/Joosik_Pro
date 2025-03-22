@@ -32,7 +32,17 @@ public class VsStockPostRepository {
         return query.getResultList();
     }
 
-    public List<VsStockPost> findAll() {
+    public List<VsStockPost> findVsStockPostByStockIds(Long stockId1, Long stockId2) {
+        String jpql = "SELECT v FROM VsStockPost v " +
+                "WHERE (v.stock1.id = :stockId1 AND v.stock2.id = :stockId2) " +
+                "   OR (v.stock1.id = :stockId2 AND v.stock2.id = :stockId1)";
+        TypedQuery<VsStockPost> query = em.createQuery(jpql, VsStockPost.class);
+        query.setParameter("stockId1", stockId1);
+        query.setParameter("stockId2", stockId2);
+        return query.getResultList();
+    }
+
+    public List<VsStockPost> findAllVsStockPost() {
         return em.createQuery("SELECT v FROM VsStockPost v", VsStockPost.class)
                 .getResultList();
     }

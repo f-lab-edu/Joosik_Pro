@@ -1,13 +1,12 @@
 package com.joopro.Joosik_Pro.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Getter @Setter
+@Entity @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 출력 방지
 public class Opinion {
 
     @Id @GeneratedValue
@@ -30,22 +29,34 @@ public class Opinion {
 
     private long dislike_sum;
 
-    public static Opinion makeOpinion(String comment, Member member, Article article){
-        Opinion opinion = new Opinion();
-        opinion.setComment(comment);
+    @Builder
+    public Opinion(String comment, LocalDateTime date_created){
+        this.comment = comment;
+        this.like_sum = 0L;
+        this.dislike_sum = 0L;
+        this.date_created = (date_created != null) ? date_created : LocalDateTime.now();
+    }
+
+    public static Opinion createOpinion(String comment, Article article, Member member){
+        Opinion opinion = Opinion.builder()
+                .comment(comment)
+                .build();
         opinion.setArticle(article);
         opinion.setMember(member);
         return opinion;
     }
 
+
+    // 연관관계 편의 메서드
     public void setArticle(Article article){
         this.article = article;
-        article.getOpinionList().add(this);
+        article.addOpinion(this);
     }
 
+    // 연관관계 편의 메서드
     public void setMember(Member member){
         this.member = member;
-        member.getOpinions().add(this);
+        member.addOpinion(this);
     }
 
 
