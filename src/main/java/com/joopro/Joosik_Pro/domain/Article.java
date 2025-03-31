@@ -87,5 +87,10 @@ public class Article {
         opinionList.add(opinion);
     }
 
+    // viewCount 올리는 메서드
+    public void increaseViewCount(Long viewCount){
+        this.viewCount += viewCount;
+    }
+
 
 }

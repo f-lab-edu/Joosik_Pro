@@ -27,7 +27,8 @@ public class SingleArticleService {
 
         Stock stock = stockService.findStockByCompanyNameReturnEntity(createSingleStockPostDto.getStockName());
         Member member = memberService.findByMemberIdReturnEntity(createSingleStockPostDto.getUserId());
-        SingleStockPost singleStockPost = Article.createSingleStockPost(createSingleStockPostDto.getContent(), stock, member);
+        Article article = Article.createArticle(createSingleStockPostDto.getContent(),member);
+        SingleStockPost singleStockPost = Article.createSingleStockPost(article, stock);
 
         singleStockPostRepository.save(singleStockPost);
 
