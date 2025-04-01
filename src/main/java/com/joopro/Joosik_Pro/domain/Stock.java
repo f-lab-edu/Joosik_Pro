@@ -1,5 +1,6 @@
 package com.joopro.Joosik_Pro.domain;
 
+import com.joopro.Joosik_Pro.domain.Post.SingleStockPost;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,12 +18,11 @@ public class Stock {
     @OneToMany(mappedBy = "stock")
     private List<StockMembership> memberships = new ArrayList<>();
 
-    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "stock", orphanRemoval = true)
     private List<SingleStockPost> singleStockPosts = new ArrayList<>();
 
     private String companyName;
 
-    @Setter
     private int memberNumber;
 
     private int articleNumber;

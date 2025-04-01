@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 public class CreateVsStockPostDto {
     private Long userId;
     private String content;
-    private String firstStockName;
-    private String secondStockName;
-
+    private Long firstStockId;
+    private Long secondStockId;
 
 }

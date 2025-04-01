@@ -1,10 +1,8 @@
 package com.joopro.Joosik_Pro.service;
 
-import com.joopro.Joosik_Pro.domain.Article;
-import com.joopro.Joosik_Pro.domain.SingleStockPost;
-import com.joopro.Joosik_Pro.domain.VsStockPost;
-import com.joopro.Joosik_Pro.repository.SingleStockPostRepository;
-import com.joopro.Joosik_Pro.repository.VsStockPostRepository;
+import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.domain.Post.VsStockPost;
+import com.joopro.Joosik_Pro.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,29 +14,17 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ViewCountService {
 
-    private final SingleStockPostRepository singleStockPostRepository;
-    private final VsStockPostRepository vsStockPostRepository;
+    private final PostRepository postRepository;
 
     @Transactional
-    public void increaseSingleStockPostViewCount(Long id){
-        SingleStockPost post = singleStockPostRepository.findById(id);
-        Article article = post.getArticle();
-        article.increaseViewCount(1L);
+    public void increaseViewCount(Long id){
+        Post post = postRepository.findById(id);
+        post.increaseViewCount(1L);
     }
 
-    @Transactional
-    public void increaseVsStockPostViewCount(Long id){
-        VsStockPost post = vsStockPostRepository.findByVsStockPostId(id);
-        Article article = post.getArticle();
-        article.increaseViewCount(1L);
+    public List<Post> findPopularPost(){
+        return postRepository.getPopularArticles();
     }
 
-    public List<SingleStockPost> findPopularSingleStockPostArticle(){
-        return singleStockPostRepository.getPopularArticles();
-    }
-
-    public List<VsStockPost> findPopularVsStockPostArticle(){
-        return vsStockPostRepository.getPopularArticles();
-    }
 
 }

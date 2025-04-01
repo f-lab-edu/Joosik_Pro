@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FindStockDto {
 
-    @NotNull
+    @NotNull(message = "주식 ID는 필수입니다.")
     Long stockId;
+
 }

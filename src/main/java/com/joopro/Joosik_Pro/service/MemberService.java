@@ -2,7 +2,7 @@ package com.joopro.Joosik_Pro.service;
 
 import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
-import com.joopro.Joosik_Pro.dto.memberdto.MemberDto;
+import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,51 +17,54 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
 
+    // 멤버 등록
     @Transactional
-    public MemberDto join(CreateRequestMemberDto request){
+    public MemberDtoResponse join(CreateRequestMemberDto request){
         Member member = Member.builder()
                 .name(request.getUsername())
                 .email(request.getEmail())
                 .build();
         memberRepository.save(member);
-        MemberDto memberDto = MemberDto.builder()
-                .name(member.getName())
-                .build();
-        return memberDto;
+
+        MemberDtoResponse memberDtoResponse = MemberDtoResponse.of(member);
+        return memberDtoResponse;
     }
 
+    // 멤버 정보 업데이트
     @Transactional
     public void update(Long id, String name, String password, String email){
         Member member = memberRepository.findOne(id);
         member.updateMember(name, password, email);
     }
 
-    public List<MemberDto> getMembers(){
+    // MemberDtoResponse List 모두 반환
+    public List<MemberDtoResponse> getMembers(){
         List<Member> members = memberRepository.findAll();
-        List<MemberDto> memberDtoList = members.stream()
-                .map(m-> MemberDto.builder().name(m.getName()).build())
+        List<MemberDtoResponse> memberDtoResponseList = members.stream()
+                .map(m->MemberDtoResponse.of(m))
                 .toList();
-        return memberDtoList;
+        return memberDtoResponseList;
     }
 
-    public MemberDto findByMemberId(Long memberId){
+    // MemberId로 MemberDTOResponse 반환
+    public MemberDtoResponse findByMemberId(Long memberId){
         Member member = memberRepository.findOne(memberId);
-        MemberDto memberDto = MemberDto.builder()
-                .name(member.getName())
-                .build();
-        return memberDto;
+        MemberDtoResponse memberDtoResponse = MemberDtoResponse.of(member);
+        return memberDtoResponse;
     }
 
+    // MemberID로 Entity 멤버 Entity 반환
     public Member findByMemberIdReturnEntity(Long memberId){
         return memberRepository.findOne(memberId);
     }
 
-    public List<MemberDto> findMemberByName(String name){
+    // 멤버 이름으로 MemberDtoResponse List 반환
+    public List<MemberDtoResponse> findMemberByName(String name){
         List<Member> members = memberRepository.findByName(name);
-        List<MemberDto> memberDtoList = members.stream()
-                .map(m-> MemberDto.builder().name(m.getName()).build())
+        List<MemberDtoResponse> memberDtoResponseList = members.stream()
+                .map(m->MemberDtoResponse.of(m))
                 .toList();
-        return memberDtoList;
+        return memberDtoResponseList;
     }
 
 }

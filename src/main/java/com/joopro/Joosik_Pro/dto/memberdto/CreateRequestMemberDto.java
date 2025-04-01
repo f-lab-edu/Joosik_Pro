@@ -5,17 +5,14 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@NoArgsConstructor // Repository에서 @RequestBody에서 사용할 생성자입니다.
+@NoArgsConstructor // Repository단 @RequestBody에서 사용할 생성자입니다.
+@Getter
 public class CreateRequestMemberDto {
 
-    @NotEmpty
-    @Getter
+    @NotNull(message = "회원 이름은 필수입니다.")
     private String username;
 
-    @NotEmpty
-    private String password;
-
-    @Getter
+    @NotNull(message = "이메일은 필수입니다.")
     private String email;
 
 }

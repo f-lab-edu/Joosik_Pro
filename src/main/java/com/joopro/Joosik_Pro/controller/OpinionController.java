@@ -1,13 +1,8 @@
 package com.joopro.Joosik_Pro.controller;
 
-import com.joopro.Joosik_Pro.domain.Article;
-import com.joopro.Joosik_Pro.domain.Member;
-import com.joopro.Joosik_Pro.domain.Opinion;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.dto.opiniondto.CreateOpinionDto;
-import com.joopro.Joosik_Pro.dto.opiniondto.ReturnOpinionDto;
-import com.joopro.Joosik_Pro.service.SingleArticleService;
-import com.joopro.Joosik_Pro.service.MemberService;
+import com.joopro.Joosik_Pro.dto.opiniondto.OpinionDtoResponse;
 import com.joopro.Joosik_Pro.service.OpinionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,27 +12,41 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/opinion")
 public class OpinionController {
 
     private final OpinionService opinionService;
 
-    @PostMapping("/api/singleopinion")
-    public Result saveSingleArticleOpinion(@RequestBody @Valid CreateOpinionDto createOpinionDto, @RequestParam Long memberId, @RequestParam Long articleId){
-        ReturnOpinionDto returnOpinionDto = opinionService.saveSingleArticleOpinion(createOpinionDto, memberId, articleId);
-        return new Result("success", returnOpinionDto);
+    @PostMapping("/save")
+    public Result<OpinionDtoResponse> saveOpinion(
+            @RequestBody @Valid CreateOpinionDto createOpinionDto,
+            @RequestParam Long memberId,
+            @RequestParam Long postId) {
+        OpinionDtoResponse opinionDtoResponse = opinionService.SaveOpinion(createOpinionDto, memberId, postId);
+        return Result.ok(opinionDtoResponse);
     }
 
-    @PostMapping("/api/vsopinion")
-    public Result saveVsArticleOpinion(@RequestBody @Valid CreateOpinionDto createOpinionDto, @RequestParam Long memberId, @RequestParam Long articleId){
-        ReturnOpinionDto returnOpinionDto = opinionService.saveVsArticleOpinion(createOpinionDto, memberId, articleId);
-        return new Result("success", returnOpinionDto);
-
+    @GetMapping("/member/{id}")
+    public Result<List<OpinionDtoResponse>> getOpinionByMemberId(@PathVariable("id") Long id) {
+        List<OpinionDtoResponse> opinionDtoResponses = opinionService.findOpinionByMemberId(id);
+        return Result.ok(opinionDtoResponses);
     }
 
-    @GetMapping("/api/opinion/member/{id}")
-    public Result getOpinionByMemberId(@PathVariable("id")Long id){
-        List<ReturnOpinionDto> returnOpinionDtos = opinionService.findOpinionByMemberId(id);
-        return new Result("success", returnOpinionDtos);
+    @PatchMapping("/update/{id}")
+    public Result<String> updateOpinion(@PathVariable("id") Long id, @RequestParam String comment) {
+        opinionService.changeOpinion(id, comment);
+        return Result.ok("success");
     }
 
+    @PostMapping("/like/{id}")
+    public Result<String> likeOpinion(@PathVariable("id") Long id) {
+        opinionService.press_like(id);
+        return Result.ok("success");
+    }
+
+    @PostMapping("/dislike/{id}")
+    public Result<String> dislikeOpinion(@PathVariable("id") Long id) {
+        opinionService.press_dislike(id);
+        return Result.ok("success");
+    }
 }

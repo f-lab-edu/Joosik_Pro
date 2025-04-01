@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class CreateSingleStockPostDto {
     private Long userId;
     private String content;
-    private String stockName;
+    private Long stockId;
 
 }
