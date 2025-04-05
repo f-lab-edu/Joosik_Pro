@@ -1,12 +1,11 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
-import com.joopro.Joosik_Pro.domain.Article;
-import com.joopro.Joosik_Pro.domain.SingleStockPost;
+import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,28 +22,35 @@ import java.util.stream.Collectors;
 public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     private final EntityManager em;
-    private Map<Long, Long> cache = new LinkedHashMap<>();
+    private final PostRepository postRepository;
+    private LinkedHashMap<Long, Long> cache = new LinkedHashMap<>();
+    private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
+
+
 
     // viewCount cache에 있는지 확인하고 있다면 cache에서 증가시키는 로직
     @Override
-    public void increaseViewCount(Long postId){
+    public void bulkUpdatePostViews(Long postId) {
         Long currentCount = cache.get(postId);
         if(cache.get(postId) != null){
             cache.put(postId, currentCount + 1);
         }else{
-            SingleStockPost post = em.find(SingleStockPost.class, postId);
-            Article article = post.getArticle();
-            article.increaseViewCount(1L);
+            Post post = em.find(Post.class, postId);
+            post.increaseViewCount(1L);
         }
     }
 
     @Override
-    // 데이터베이스에 연동
+    public LinkedHashMap<Long, Post> getPopularPosts() {
+        return returnCache;
+    }
+
+    // 데이터베이스에 조회수 연동
     public void updateViewCountsToDB(){
         for(Map.Entry<Long, Long> entry : cache.entrySet()) {
-            SingleStockPost post = em.find(SingleStockPost.class, entry.getKey());
+            Post post = em.find(Post.class, entry.getKey());
             if (post != null) {
-                post.getArticle().increaseViewCount(entry.getValue());
+                post.increaseViewCount(entry.getValue());
             }
         }
         cache.clear();
@@ -60,23 +66,36 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
                         (existing, replacement) -> existing,
                         LinkedHashMap::new
                 ));
-    }
-
-    // cache에 데이터 넣기
-    public void initializeCache(){
-        cache = getPopularArticles().stream()
+        returnCache = cache.entrySet().stream()
                 .collect(Collectors.toMap(
-                        SingleStockPost::getId,
-                        post -> post.getArticle().getViewCount(),
+                        Map.Entry::getKey,
+                        entry -> postRepository.findById(entry.getKey()),
                         (existing, replacement) -> existing,
                         LinkedHashMap::new
                 ));
     }
 
-    @Override
+    // 맨 처음 cache에 데이터 넣기
+    public void initializeCache(){
+        cache = getPopularArticles().stream()
+                .collect(Collectors.toMap(
+                        Post::getId,
+                        post -> post.getViewCount(),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ));
+        returnCache = cache.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> postRepository.findById(entry.getKey()),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ));
+    }
+
     // 상위 10개 가져오는 코드
-    public List<SingleStockPost> getPopularArticles() {
-        return em.createQuery("SELECT s FROM SingleStockPost s ORDER BY s.article.viewCount DESC", SingleStockPost.class)
+    public List<Post> getPopularArticles() {
+        return em.createQuery("SELECT p FROM Post p ORDER BY p.viewCount DESC", Post.class)
                 .setMaxResults(100) // 상위 100개만 가져오기
                 .getResultList();
     }
