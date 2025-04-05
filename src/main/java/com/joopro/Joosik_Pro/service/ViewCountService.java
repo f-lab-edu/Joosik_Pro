@@ -1,5 +1,6 @@
 package com.joopro.Joosik_Pro.service;
 
+import com.joopro.Joosik_Pro.domain.Article;
 import com.joopro.Joosik_Pro.domain.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.VsStockPost;
 import com.joopro.Joosik_Pro.repository.SingleStockPostRepository;
@@ -20,12 +21,16 @@ public class ViewCountService {
 
     @Transactional
     public void increaseSingleStockPostViewCount(Long id){
-        singleStockPostRepository.increaseViewCount(id);
+        SingleStockPost post = singleStockPostRepository.findById(id);
+        Article article = post.getArticle();
+        article.increaseViewCount(1L);
     }
 
     @Transactional
     public void increaseVsStockPostViewCount(Long id){
-        vsStockPostRepository.increaseViewCount(id);
+        VsStockPost post = vsStockPostRepository.findByVsStockPostId(id);
+        Article article = post.getArticle();
+        article.increaseViewCount(1L);
     }
 
     public List<SingleStockPost> findPopularSingleStockPostArticle(){

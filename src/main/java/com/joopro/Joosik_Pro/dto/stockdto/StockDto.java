@@ -1,14 +1,23 @@
 package com.joopro.Joosik_Pro.dto.stockdto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
-@AllArgsConstructor
+@Getter
 public class StockDto {
-    private String company_name;
-    private int member_number;
-    private int article_number;
+    private String companyName;
+    private int memberNumber;
+    private int articleNumber;
     private String ticker;
     private String sector;
+
+    @Builder
+    public StockDto(String companyName, int memberNumber, int articleNumber, String ticker, String sector){
+        this.companyName = companyName;
+        this.memberNumber = memberNumber;
+        this.articleNumber = articleNumber;
+        this.ticker = ticker;
+        this.sector = sector;
+    }
+
 }

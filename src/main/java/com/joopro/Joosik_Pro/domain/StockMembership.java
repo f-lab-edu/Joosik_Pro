@@ -1,13 +1,12 @@
 package com.joopro.Joosik_Pro.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Getter @Setter
+@Entity @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
 public class StockMembership {
 
     @Id @GeneratedValue
@@ -23,29 +22,41 @@ public class StockMembership {
 
     private LocalDateTime date_subscribe;
 
+    @Setter
     private boolean isActive;
 
-    private void setMember(Member member){
+    @Builder
+    public StockMembership(Member member, Stock stock){
         this.member = member;
-        member.getMemberships().add(this);
-    }
-
-    public void setStock(Stock stock){
         this.stock = stock;
-        stock.getMemberships().add(this);
+        this.isActive = true;
     }
 
     //생성 메서드
     public static StockMembership createStockMemberShip(Member member, Stock stock){
-        StockMembership stockMembership = new StockMembership();
+        StockMembership stockMembership = StockMembership.builder()
+                .member(member)
+                .stock(stock)
+                .build();
         stockMembership.setMember(member);
         stockMembership.setStock(stock);
-        stockMembership.setActive(true);
-        int a = stock.getMember_number();
-        stock.setMember_number(a+1);
+        stock.addMemberNumber();
         return stockMembership;
     }
 
+    // 연관관계 편의 메서드
+    private void setMember(Member member){
+        this.member = member;
+        member.addStockMemberShip(this);
+    }
+
+    // 연관관계 편의 메서드
+    public void setStock(Stock stock){
+        this.stock = stock;
+        stock.addStockMemberShip(this);
+    }
+
+    // 멤버십 취소
     public void cancel(){
         this.setActive(false);
     }

@@ -1,11 +1,11 @@
 package com.joopro.Joosik_Pro.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
-@Getter @Setter
+@Entity @Getter
 public class VsStockPost {
 
     @Id @GeneratedValue
@@ -24,14 +24,16 @@ public class VsStockPost {
     @JoinColumn(name = "vs_article_id")
     private Article article;
 
-    public static VsStockPost createVsStockPost(Stock stock1, Stock stock2, Article article){
-        VsStockPost vsStockPost = new VsStockPost();
-        vsStockPost.setStock1(stock1);
-        vsStockPost.setStock2(stock2);
-        vsStockPost.setArticle(article);
+    // 연관관계 편의 메서드
+    public void setArticle(Article article){
+        this.article = article;
+        article.assignVsStockPost(this);
+    }
 
-
-        return vsStockPost;
+    // 연관관계 편의 메서드
+    public void setStocks(Stock stock1, Stock stock2){
+        this.stock1 = stock1;
+        this.stock2 = stock2;
     }
 
 }
