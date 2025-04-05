@@ -24,7 +24,7 @@ public abstract class Post extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Opinion> opinionList = new ArrayList<>();
 
     @Setter
