@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * TopViewRepository 역할 수행
@@ -23,7 +24,7 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
 
     private final PostRepository postRepository;
     private final EntityManager em;
-    private static int cacheHit = 0;
+    private static AtomicInteger cacheHit = new AtomicInteger();
     private static LinkedHashMap<Long, Post> Top100Post = new LinkedHashMap<>();
     private static final Map<Long, Integer> tempViewCount = new ConcurrentHashMap<>();
 
@@ -55,12 +56,12 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
 
     // tempviewCount가 100개 들어올때까지 저장, tempViewCount가 100개 넘었을 때 updateViewCountsToDB 호출, DB와 sync 맞추기
     public void updateViewCountsToDB(Long postId) {
-        tempViewCount.put(postId, tempViewCount.getOrDefault(postId,0) + 1);
-        cacheHit++;
 
-        if(cacheHit >= 100){
+        tempViewCount.put(postId, tempViewCount.getOrDefault(postId, 0) + 1);
+
+        if (cacheHit.incrementAndGet() >= 100) {
             syncViewCountsToDB();
-            cacheHit = 0;
+            cacheHit.set(0);
         }
     }
 
