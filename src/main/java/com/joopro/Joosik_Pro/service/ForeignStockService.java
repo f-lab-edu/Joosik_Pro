@@ -1,7 +1,9 @@
     package com.joopro.Joosik_Pro.service;
 
+    import com.fasterxml.jackson.core.JsonProcessingException;
     import com.fasterxml.jackson.databind.JsonNode;
     import com.fasterxml.jackson.databind.ObjectMapper;
+    import com.joopro.Joosik_Pro.domain.DomesticStock;
     import com.joopro.Joosik_Pro.domain.ForeignStock;
     import com.joopro.Joosik_Pro.repository.ForeignStockRepository;
     import lombok.RequiredArgsConstructor;
@@ -71,55 +73,29 @@
             log.info("Response Status: {}", response.getStatusCode());
             log.info("Response Body: {}", response.getBody());
 
-            // JSON 파싱
-            try {
-                JsonNode root = objectMapper.readTree(response.getBody());
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode root = null;
+                try {
+                    root = objectMapper.readTree(response.getBody());
+                } catch (JsonProcessingException ex) {
+                    throw new RuntimeException(ex);
+                }
                 JsonNode output = root.path("output");
-                log.info("in try");
-                // 데이터 변환
-                double base = parseDoubleSafe(output.path("base").asText(), 0.0);
-                double last = parseDoubleSafe(output.path("last").asText(), 0.0);
-                int sign = parseIntSafe(output.path("sign").asText(), 0); // 0이면 변동 없음
-                double diff = parseDoubleSafe(output.path("diff").asText(), 0.0);
-                double rate = parseDoubleSafe(output.path("rate").asText().trim(), 0.0); // 공백 제거
-                long tvol = parseLongSafe(output.path("tvol").asText(), 0L);
-                long tamt = parseLongSafe(output.path("tamt").asText(), 0L);
-                log.info("last : {}", last);
-                ForeignStock stock = new ForeignStock(base, last, sign, diff, rate, tvol, tamt);
 
-                // DB 저장
-                return foreignStockRepository.save(stock);
+                double 현재가 = output.path("stck_prpr").asDouble();
+                double 전일종가 = output.path("stck_hgpr").asDouble();
+                double 거래량 = output.path("stck_lwpr").asDouble();
 
-            } catch (Exception e) {
-                throw new RuntimeException("API 응답 파싱 실패", e);
+                ForeignStock foreignStock = ForeignStock.builder()
+                        .현재가(현재가)
+                        .전일종가(전일종가)
+                        .거래량(거래량)
+                        .build();
+
+                return foreignStock;
             }
 
+            return null;
         }
-
-        // 안전한 숫자 변환 메서드
-        private int parseIntSafe(String value, int defaultValue) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
-        private double parseDoubleSafe(String value, double defaultValue) {
-            try {
-                return Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
-        private long parseLongSafe(String value, long defaultValue) {
-            try {
-                return Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                return defaultValue;
-            }
-        }
-
 
     }

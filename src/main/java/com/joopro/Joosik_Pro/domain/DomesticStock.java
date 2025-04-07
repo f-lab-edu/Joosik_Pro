@@ -14,51 +14,45 @@ public class DomesticStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String stckShrnIscd; // 주식 단축 종목코드
-    private String rprsMrktKorName; // 대표 시장 한글 명
-    private String bstpKorIsnm; // 업종 한글 종목명
-    private String stckPrpr; // 주식 현재가
-    private String stckOprc; // 주식 시가
-    private String stckHgpr; // 주식 최고가
-    private String stckLwpr; // 주식 최저가
-    private String stckMxpr; // 주식 상한가
-    private String stckLlam; // 주식 하한가
-    private String stckSdpr; // 주식 기준가
-    private String per; // PER
-    private String pbr; // PBR
-    private String eps; // EPS
-    private String bps; // BPS
-    private String w52Hgpr; // 52주 최고가
-    private String w52Lwpr; // 52주 최저가
-    private String d250Hgpr; // 250일 최고가
-    private String d250Lwpr; // 250일 최저가
-    private String stckDryyHgpr; // 연중 최고가
-    private String stckDryyLwpr; // 연중 최저가
-    private String cpfn; // 자본금
+    @OneToOne
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
+
+    private Double 현재가;
+    private Double 최고가;
+    private Double 최저가;
+    private Double 상한가;  // 주식 상한가
+    private Double 하한가;  // 주식 하한가
+
+    private Double from250HighPrice; // 250일 최고가
+    private Double from250LowPrice;  // 250일 최저가
+    private Double fromYearHighPrice; // 주식 연중 최고가
+    private Double fromYearLowPrice;  // 주식 연중 최저가
+    private Double from52wHighPrice;  // 52주일 최고가
+    private Double from52wLowPrice;  // 52주일 최저가
+
+    private Double per;
+    private Double pbr;
+    private Double eps;
 
     @Builder
-    public DomesticStock(String stckShrnIscd, String rprsMrktKorName, String bstpKorIsnm, String stckPrpr, String stckOprc, String stckHgpr, String stckLwpr, String stckMxpr, String stckLlam, String stckSdpr, String per, String pbr, String eps, String bps, String w52Hgpr, String w52Lwpr, String d250Hgpr, String d250Lwpr, String stckDryyLwpr, String stckDryyHgpr, String cpfn) {
-        this.stckShrnIscd = stckShrnIscd;
-        this.rprsMrktKorName = rprsMrktKorName;
-        this.bstpKorIsnm = bstpKorIsnm;
-        this.stckPrpr = stckPrpr;
-        this.stckOprc = stckOprc;
-        this.stckHgpr = stckHgpr;
-        this.stckLwpr = stckLwpr;
-        this.stckMxpr = stckMxpr;
-        this.stckLlam = stckLlam;
-        this.stckSdpr = stckSdpr;
+    public DomesticStock(Double 현재가, Double 최고가, Double 최저가, Double 상한가, Double 하한가, Double from250HighPrice, Double from250LowPrice, Double fromYearHighPrice, Double fromYearLowPrice, Double from52wHighPrice, Double from52wLowPrice, Double per, Double pbr, Double eps) {
+        this.현재가 = 현재가;
+        this.최고가 = 최고가;
+        this.최저가 = 최저가;
+        this.상한가 = 상한가;
+        this.하한가 = 하한가;
+        this.from250HighPrice = from250HighPrice;
+        this.from250LowPrice = from250LowPrice;
+        this.fromYearHighPrice = fromYearHighPrice;
+        this.fromYearLowPrice = fromYearLowPrice;
+        this.from52wHighPrice = from52wHighPrice;
+        this.from52wLowPrice = from52wLowPrice;
         this.per = per;
         this.pbr = pbr;
         this.eps = eps;
-        this.bps = bps;
-        this.w52Hgpr = w52Hgpr;
-        this.w52Lwpr = w52Lwpr;
-        this.d250Hgpr = d250Hgpr;
-        this.d250Lwpr = d250Lwpr;
-        this.stckDryyLwpr = stckDryyLwpr;
-        this.stckDryyHgpr = stckDryyHgpr;
-        this.cpfn = cpfn;
     }
+
+
 
 }
