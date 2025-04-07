@@ -2,6 +2,7 @@ package com.joopro.Joosik_Pro.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -13,22 +14,18 @@ public class ForeignStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private double base;  // 전일 종가
-    private double last;  // 현재가
-    private int sign;     // 대비 기호
-    private double diff;  // 대비
-    private double rate;  // 등락율
-    private long tvol;    // 거래량
-    private long tamt;    // 거래대금
+    @OneToOne
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
 
-    public ForeignStock(double base, double last, int sign, double diff, double rate, long tvol, long tamt) {
-        this.base = base;
-        this.last = last;
-        this.sign = sign;
-        this.diff = diff;
-        this.rate = rate;
-        this.tvol = tvol;
-        this.tamt = tamt;
+    private double 현재가;  // 현재가
+    private double 전일종가;  // 전일종가
+    private double 거래량; // 거래량
+
+    @Builder
+    public ForeignStock(double 현재가, double 전일종가, double 거래량) {
+        this.현재가 = 현재가;
+        this.전일종가 = 전일종가;
+        this.거래량 = 거래량;
     }
-
 }
