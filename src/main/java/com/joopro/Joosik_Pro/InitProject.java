@@ -3,7 +3,7 @@ package com.joopro.Joosik_Pro;
 import com.joopro.Joosik_Pro.domain.Article;
 import com.joopro.Joosik_Pro.domain.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.Stock;
-import com.joopro.Joosik_Pro.domain.VsStockPost;
+import com.joopro.Joosik_Pro.domain.Post.VsStockPost;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;

@@ -1,5 +1,6 @@
 package com.joopro.Joosik_Pro.domain;
 
+import com.joopro.Joosik_Pro.domain.Post.Post;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,39 +19,37 @@ public class Opinion {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "article_id")
-    private Article article;
+    @JoinColumn(name = "post_id")
+    private Post post;
 
+    @Setter
     private String comment;
-
-    private LocalDateTime date_created;
 
     private long like_sum;
 
     private long dislike_sum;
 
     @Builder
-    public Opinion(String comment, LocalDateTime date_created){
+    public Opinion(String comment){
         this.comment = comment;
         this.like_sum = 0L;
         this.dislike_sum = 0L;
-        this.date_created = (date_created != null) ? date_created : LocalDateTime.now();
     }
 
-    public static Opinion createOpinion(String comment, Article article, Member member){
+    public static Opinion createOpinion(String comment, Post post, Member member){
         Opinion opinion = Opinion.builder()
                 .comment(comment)
                 .build();
-        opinion.setArticle(article);
+        opinion.setPost(post);
         opinion.setMember(member);
         return opinion;
     }
 
 
     // 연관관계 편의 메서드
-    public void setArticle(Article article){
-        this.article = article;
-        article.addOpinion(this);
+    public void setPost(Post post){
+        this.post = post;
+        post.addOpinion(this);
     }
 
     // 연관관계 편의 메서드

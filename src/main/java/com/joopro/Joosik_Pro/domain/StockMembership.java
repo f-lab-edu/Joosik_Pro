@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
-public class StockMembership {
+public class StockMembership extends BaseEntity{
 
     @Id @GeneratedValue
     private Long id;
@@ -19,8 +19,6 @@ public class StockMembership {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id")
     private Stock stock;
-
-    private LocalDateTime date_subscribe;
 
     @Setter
     private boolean isActive;

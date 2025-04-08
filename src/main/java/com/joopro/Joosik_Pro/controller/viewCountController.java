@@ -1,9 +1,7 @@
 package com.joopro.Joosik_Pro.controller;
 
-import com.joopro.Joosik_Pro.domain.Article;
-import com.joopro.Joosik_Pro.domain.SingleStockPost;
-import com.joopro.Joosik_Pro.domain.VsStockPost;
-import com.joopro.Joosik_Pro.dto.ArticleDto;
+import com.joopro.Joosik_Pro.domain.Post.VsStockPost;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.service.ViewCountService;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +36,10 @@ public class viewCountController {
         List<Article> articleList = singleStockPostList.stream()
                 .map(a-> a.getArticle())
                 .toList();
-        List<ArticleDto> articleDtoList= articleList.stream()
-                .map(a -> new ArticleDto(a.getMember().getName(), a.getContent()))
+        List<PostDtoResponse> postDtoResponseList = articleList.stream()
+                .map(a -> new PostDtoResponse(a.getMember().getName(), a.getContent()))
                 .toList();
-        return new Result("success", articleDtoList);
+        return new Result("success", postDtoResponseList);
 
     }
 
@@ -51,10 +49,10 @@ public class viewCountController {
         List<Article> articleList = vsStockPostList.stream()
                 .map(a-> a.getArticle())
                 .toList();
-        List<ArticleDto> articleDtoList= articleList.stream()
-                .map(a -> new ArticleDto(a.getMember().getName(), a.getContent()))
+        List<PostDtoResponse> postDtoResponseList = articleList.stream()
+                .map(a -> new PostDtoResponse(a.getMember().getName(), a.getContent()))
                 .toList();
-        return new Result("success", articleDtoList);
+        return new Result("success", postDtoResponseList);
 
     }
 

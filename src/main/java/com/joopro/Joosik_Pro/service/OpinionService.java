@@ -1,10 +1,10 @@
 package com.joopro.Joosik_Pro.service;
 
-import com.joopro.Joosik_Pro.domain.Article;
 import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.domain.Opinion;
+import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.dto.opiniondto.CreateOpinionDto;
-import com.joopro.Joosik_Pro.dto.opiniondto.ReturnOpinionDto;
+import com.joopro.Joosik_Pro.dto.opiniondto.OpinionDtoResponse;
 import com.joopro.Joosik_Pro.repository.OpinionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,68 +18,47 @@ public class OpinionService {
 
     private final OpinionRepository opinionRepository;
     private final MemberService memberService;
-    private final SingleArticleService singleArticleService;
-    private final VsArticleService vsArticleService;
+    private final PostService postService;
 
+    // 댓글 저장
     @Transactional
-    public ReturnOpinionDto saveSingleArticleOpinion(CreateOpinionDto createOpinionDto, Long memberId, Long articleId){
+    public OpinionDtoResponse SaveOpinion(CreateOpinionDto createOpinionDto, Long memberId, Long postId){
         Member member = memberService.findByMemberIdReturnEntity(memberId);
-        Article article;
-        article = singleArticleService.findSingleStockPostByPostIdReturnEntity(articleId).getArticle();
-        Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), article, member);
+        Post post = postService.findPostByPostId(postId);
+        Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), post, member);
         opinionRepository.save(opinion);
-        ReturnOpinionDto returnOpinionDto = ReturnOpinionDto.builder()
-                .memberId(memberId)
-                .articleId(articleId)
-                .opinionId(opinion.getId())
-                .build();
-        return returnOpinionDto;
+        return OpinionDtoResponse.of(opinion);
     }
 
-    @Transactional
-    public ReturnOpinionDto saveVsArticleOpinion(CreateOpinionDto createOpinionDto, Long memberId, Long articleId){
-        Member member = memberService.findByMemberIdReturnEntity(memberId);
-        Article article;
-        article = vsArticleService.findVsStockPostByPostIdReturnEntity(articleId).getArticle();
-        Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), article, member);
-        opinionRepository.save(opinion);
-        ReturnOpinionDto returnOpinionDto = ReturnOpinionDto.builder()
-                .memberId(memberId)
-                .articleId(articleId)
-                .opinionId(opinion.getId())
-                .build();
-        return returnOpinionDto;
-    }
-
+    // OpinionId로 Opinion 찾기
     public Opinion findByOpinionId(Long opinionId){
         return opinionRepository.findById(opinionId);
     }
 
-    public List<ReturnOpinionDto> findOpinionByMemberId(Long memberId){
+    // memberId로 Opinion 찾기
+    public List<OpinionDtoResponse> findOpinionByMemberId(Long memberId){
         List<Opinion> opinionList= opinionRepository.findOpinionByMemberId(memberId);
-        List<ReturnOpinionDto> returnOpinionDtos = opinionList.stream()
-                .map(o -> ReturnOpinionDto.builder()
-                        .memberId(o.getMember().getId())
-                        .articleId(o.getArticle().getId())
-                        .opinionId(o.getId())
-                        .build())
+        List<OpinionDtoResponse> opinionDtoResponses = opinionList.stream()
+                .map(o -> OpinionDtoResponse.of(o))
                 .toList();
-        return returnOpinionDtos;
+        return opinionDtoResponses;
     }
 
     @Transactional
-    public void changeOpinion(Long id, String comment, Member member, Article article){
+    public void changeOpinion(Long id, String comment){
         Opinion opinion = opinionRepository.findById(id);
-        opinion.setMember(member);
-        opinion.setArticle(article);
+        opinion.setComment(comment);
     }
 
+    // Opinion 좋아요 누르기
     @Transactional
     public void press_like(Long id){
         Opinion opinion = opinionRepository.findById(id);
         opinion.press_like();
     }
 
+
+    // Opinion 싫어요 누르기
     @Transactional
     public void press_dislike(Long id){
         Opinion opinion = opinionRepository.findById(id);

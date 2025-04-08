@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 환경 설정 파일 무시
+src/main/resources/application.properties
+src/main/resources/application-secret.properties
