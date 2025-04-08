@@ -1,7 +1,5 @@
 package com.joopro.Joosik_Pro.controller;
 
-import com.joopro.Joosik_Pro.domain.Article;
-import com.joopro.Joosik_Pro.domain.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.Post.VsStockPost;
 import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.dto.Result;
