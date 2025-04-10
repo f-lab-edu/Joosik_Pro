@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
-public class StockMembership extends BaseEntity{
+public class StockMembership {
 
     @Id @GeneratedValue
     private Long id;

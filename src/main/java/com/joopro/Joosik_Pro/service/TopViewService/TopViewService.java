@@ -15,7 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TopViewService {
 
-    @Qualifier("topViewRepositoryImplV2")
     private final TopViewRepository topViewRepository;
 
     // 조회수 Top100 Posts 가져오기 리스트에 값 넣기

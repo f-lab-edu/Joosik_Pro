@@ -5,7 +5,9 @@ import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -23,10 +25,13 @@ import java.util.stream.Collectors;
  */
 @Repository
 @RequiredArgsConstructor
+@Primary
 public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     private final EntityManager em;
     private final PostRepository postRepository;
+
+    @Getter //테스트용 Getter
     private LinkedHashMap<Long, AtomicInteger> cache = new LinkedHashMap<>();
     private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
 
@@ -79,6 +84,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
                         (existing, replacement) -> existing,
                         LinkedHashMap::new
                 ));
+
         returnCache = cache.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
@@ -93,7 +99,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
         for(Map.Entry<Long, AtomicInteger> entry : cache.entrySet()) {
             Post post = em.find(Post.class, entry.getKey());
             if (post != null) {
-                post.increaseViewCount(entry.getValue().longValue());
+                post.setViewCount(entry.getValue().longValue());
             }
         }
         cache.clear();

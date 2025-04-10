@@ -94,11 +94,11 @@ public class PostRepository {
                 .getResultList();
     }
 
-    // 모든 Post 중 TOP 100 찾기
+    // 모든 Post 중 TOP 10 찾기
     public List<Post> getPopularArticles() {
         return em.createQuery(
                         "SELECT p FROM Post p ORDER BY p.viewCount DESC", Post.class)
-                .setMaxResults(100)
+                .setMaxResults(10)
                 .getResultList();
     }
 
