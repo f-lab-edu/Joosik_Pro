@@ -17,6 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
@@ -182,5 +185,31 @@ class TopViewRepositoryImplV1Test {
         assertThat(TopViewRepositoryImplV1.getCacheHit().get()).isEqualTo(20);
 
     }
+
+
+    @Test
+    void sameViewUpgradeAtSameTime() throws InterruptedException {
+        int threadCount = 150; // 동시에 150번 요청
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        Long testPostId = post1.getId();
+
+        for (int i = 0; i < threadCount; i++) {
+            try{
+                executorService.submit(() -> {
+                    topViewRepository.bulkUpdatePostViews(testPostId);
+                });
+            }finally{
+                latch.countDown();
+            }
+        }
+
+        latch.await();
+
+        int cachedViewCount = TopViewRepositoryImplV1.getTempViewCount().get(testPostId);
+        assertThat(cachedViewCount).isEqualTo(threadCount-100);
+    }
+
+
 
 }

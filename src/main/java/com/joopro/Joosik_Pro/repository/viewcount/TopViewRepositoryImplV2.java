@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 @Repository
 @RequiredArgsConstructor
 @Primary
+@Slf4j
 public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     private final EntityManager em;
@@ -33,6 +35,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     @Getter //테스트용 Getter
     private LinkedHashMap<Long, AtomicInteger> cache = new LinkedHashMap<>();
+    @Getter
     private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
 
     @PostConstruct
@@ -97,9 +100,15 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
     // 데이터베이스에 조회수 연동
     public void updateViewCountsToDB(){
         for(Map.Entry<Long, AtomicInteger> entry : cache.entrySet()) {
+            log.info("여기다");
             Post post = em.find(Post.class, entry.getKey());
             if (post != null) {
+                log.info("log12");
                 post.setViewCount(entry.getValue().longValue());
+                log.info("log13");
+            }
+            if(post == null){
+                log.info("진짜 null이야?");
             }
         }
         cache.clear();

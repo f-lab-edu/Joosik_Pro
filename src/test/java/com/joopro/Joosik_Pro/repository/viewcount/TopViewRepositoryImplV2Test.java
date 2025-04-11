@@ -13,6 +13,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class TopViewRepositoryImplV2Test {
 
+    private static final Logger log = LoggerFactory.getLogger(TopViewRepositoryImplV2Test.class);
     @Autowired private EntityManager em;
     @Autowired private PostRepository postRepository;
     @Autowired private MemberRepository memberRepository;
@@ -96,6 +99,12 @@ class TopViewRepositoryImplV2Test {
         em.clear();
 
         topViewRepository.updateCacheWithDB();
+    }
+
+    @AfterEach
+    void reset(){
+        topViewRepository.getCache().clear();
+        topViewRepository.getReturnCache().clear();
     }
 
     @DisplayName("조회수를 업데이트 할 때 캐시 내에 있다면 캐시 내의 조회수가 증가하고 캐시 내에 없다면 Post에서 직접 증가한다.")
@@ -198,6 +207,50 @@ class TopViewRepositoryImplV2Test {
         topViewRepository.updateViewCountsToDB();
         assertThat(postRepository.findById(post11.getId()).getViewCount()).isEqualTo(15L);
 
+    }
+
+    @Test
+    void synchronizeTest() {
+        long initialViewCount = post11.getViewCount(); // 11
+        Post post = em.find(Post.class, 11L);
+        System.out.println("log1 " + post.getViewCount());
+        int totalThreads = 120;
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(totalThreads);
+        AtomicInteger counter = new AtomicInteger(0);
+
+        for (int i = 0; i < totalThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    topViewRepository.bulkUpdatePostViews(post11.getId());
+                    log.info("current counter : " + counter.get());
+                    if (counter.incrementAndGet() == 50) {
+                        System.out.println("log4");
+                        topViewRepository.updateCacheWithDB();
+                    }
+
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        executorService.shutdown();
+
+        Post post2 = em.find(Post.class, 11L);
+        System.out.println("log5 " + post2.getViewCount());
+        System.out.println("log6");
+        topViewRepository.updateViewCountsToDB();
+
+        Long finalViewCount = postRepository.findById(post11.getId()).getViewCount();
+        System.out.println("finalViewCount : " + finalViewCount);
+        assertThat(finalViewCount).isEqualTo(initialViewCount + totalThreads);
     }
 
 
