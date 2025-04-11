@@ -3,12 +3,15 @@ package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
+import com.sun.jdi.LongType;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
+import java.sql.SQLOutput;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +30,10 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
 
     private final PostRepository postRepository;
     private final EntityManager em;
+    @Getter
     private static AtomicInteger cacheHit = new AtomicInteger();
     private static LinkedHashMap<Long, Post> Top100Post = new LinkedHashMap<>();
+    @Getter
     private static final Map<Long, Integer> tempViewCount = new ConcurrentHashMap<>();
 
 
@@ -76,10 +81,20 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
     // DB와 sync 맞추는 코드
     public void updateViewCountsToDB() {
         for(Map.Entry<Long, Integer> entry : tempViewCount.entrySet()){
-            em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
-                    .setParameter("increment", entry.getValue())
-                    .setParameter("postId", entry.getKey())
-                    .executeUpdate();
+            Long firstValue = postRepository.findById(entry.getKey()).getViewCount();
+            Post post = postRepository.findById(entry.getKey());
+            post.setViewCount(Long.valueOf(firstValue + entry.getValue()));
+            System.out.println(postRepository.findById(entry.getKey()).getViewCount());
+
+            // 이게 왜 안되지?
+//            em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
+//                    .setParameter("increment", entry.getValue())
+//                    .setParameter("postId", entry.getKey())
+//                    .executeUpdate();
+//            System.out.println(entry.getKey());
+//            System.out.println(entry.getValue());
+//
+//            System.out.println(postRepository.findById(entry.getKey()).getViewCount());
         }
         tempViewCount.clear();
     }
