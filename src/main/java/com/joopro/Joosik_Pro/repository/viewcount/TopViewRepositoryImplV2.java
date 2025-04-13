@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,16 +100,25 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     // 데이터베이스에 조회수 연동
     public void updateViewCountsToDB(){
+        log.info("updateViewCountsToDB start");
         for(Map.Entry<Long, AtomicInteger> entry : cache.entrySet()) {
+            log.info("entry.getKey() : {}", entry.getKey());
+            log.info("entry.getValue() : {}", entry.getValue());
+
             log.info("여기다");
-            Post post = em.find(Post.class, entry.getKey());
-            if (post != null) {
-                log.info("log12");
-                post.setViewCount(entry.getValue().longValue());
-                log.info("log13");
+            List<Post> posts = postRepository.findAll();
+            for (Post go : posts) {
+                System.out.println("여기는 되냐");
+                System.out.println("posts: " + go.getId());
+                System.out.println("posts: " + go.getViewCount());
             }
-            if(post == null){
-                log.info("진짜 null이야?");
+            Post post = em.find(Post.class, entry.getKey());
+
+            if (post != null) {
+                log.info("updateViewCountsToDB: post.setViewCount: {}", entry.getValue().longValue());
+                post.setViewCount(entry.getValue().longValue());
+            }else{
+                log.info("null입니다.");
             }
         }
         cache.clear();
