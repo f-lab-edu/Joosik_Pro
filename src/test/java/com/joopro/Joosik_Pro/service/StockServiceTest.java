@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.service;
 
 import com.joopro.Joosik_Pro.domain.Stock;
+import com.joopro.Joosik_Pro.service.StockService.StockService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 @Transactional
 class StockServiceTest {
 
-    @Autowired StockService stockService;
+    @Autowired
+    StockService stockService;
 
     @Test
     void saveStock() {

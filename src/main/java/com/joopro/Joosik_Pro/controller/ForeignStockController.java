@@ -1,7 +1,7 @@
 package com.joopro.Joosik_Pro.controller;
 
 import com.joopro.Joosik_Pro.domain.ForeignStock;
-import com.joopro.Joosik_Pro.service.ForeignStockService;
+import ForeignStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

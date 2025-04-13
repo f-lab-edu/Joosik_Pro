@@ -3,7 +3,7 @@ package com.joopro.Joosik_Pro.controller;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDetailDto;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDtoResponse;
-import com.joopro.Joosik_Pro.service.StockService;
+import com.joopro.Joosik_Pro.service.StockService.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
