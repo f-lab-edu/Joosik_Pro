@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.controller;
+package com.joopro.Joosik_Pro.controller.stockcontroller;
 
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDetailDto;

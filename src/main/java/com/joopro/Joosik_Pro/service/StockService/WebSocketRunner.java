@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 public class WebSocketRunner implements CommandLineRunner {
 
     private final DomesticStockLiveService domesticStockLiveService;
-    private final ForeignStockLiveService foreignStockLiveService;
 
     @Override
     public void run(String... args) {
