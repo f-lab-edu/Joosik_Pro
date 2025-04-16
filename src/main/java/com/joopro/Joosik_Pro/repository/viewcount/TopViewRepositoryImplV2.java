@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
  */
 @Repository
 @RequiredArgsConstructor
-@Primary
 @Slf4j
 public class TopViewRepositoryImplV2 implements TopViewRepository{
 
@@ -36,7 +35,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     @Getter //테스트용 Getter
     private LinkedHashMap<Long, AtomicInteger> cache = new LinkedHashMap<>();
-    @Getter
+    @Getter // 테스트용 Getter
     private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
 
     @PostConstruct
