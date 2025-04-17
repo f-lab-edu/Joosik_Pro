@@ -26,6 +26,12 @@ public class OpinionService {
         Member member = memberService.findByMemberIdReturnEntity(memberId);
         Post post = postService.findPostByPostId(postId);
         Opinion opinion = Opinion.createOpinion(createOpinionDto.getComment(), post, member);
+
+        if (createOpinionDto.getParentOpinionId() != null) {
+            Opinion parentOpinion = findByOpinionId(createOpinionDto.getParentOpinionId());
+            opinion.setParentOpinion(parentOpinion);
+        }
+
         opinionRepository.save(opinion);
         return OpinionDtoResponse.of(opinion);
     }
@@ -63,6 +69,12 @@ public class OpinionService {
     public void press_dislike(Long id){
         Opinion opinion = opinionRepository.findById(id);
         opinion.press_dislike();
+    }
+
+    @Transactional
+    public void deleteOpinion(Long opinionId){
+        Opinion opinion = opinionRepository.findById(opinionId);
+        opinion.Delete();
     }
 
 }

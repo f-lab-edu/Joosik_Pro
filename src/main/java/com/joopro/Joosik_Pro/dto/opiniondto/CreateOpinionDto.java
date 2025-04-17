@@ -17,4 +17,7 @@ public class CreateOpinionDto {
     @NotNull
     private String comment;
 
+    @Getter
+    private Long parentOpinionId;
+
 }
