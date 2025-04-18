@@ -2,11 +2,9 @@ package com.joopro.Joosik_Pro.dto.opiniondto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@Getter
 @NoArgsConstructor
 public class CreateOpinionDto {
 
@@ -14,10 +12,10 @@ public class CreateOpinionDto {
     private Long articleId;
 
     @Getter
-    @NotNull
+    @NotNull @Setter // 테스트용 @Setter
     private String comment;
 
-    @Getter
+    @Getter @Setter // 테스트용 @Setter
     private Long parentOpinionId;
 
 }
