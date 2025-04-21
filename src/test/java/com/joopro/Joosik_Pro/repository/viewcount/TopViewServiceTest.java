@@ -13,96 +13,46 @@ import com.joopro.Joosik_Pro.service.PostService;
 import com.joopro.Joosik_Pro.service.StockService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
 import jakarta.persistence.EntityManager;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
- * 동시성 테스트는 특정 로직구간을 검증하기 위한 것이 아닌 사용자가 많이 몰리는 경우를 가정
- * 따라서 Service 레이어에서 테스트해야함
+ * TopViewRepositoryImplV2SyncTest에서 언급했듯이 여러 스레드 테스트를 할 때는 @Transactional 적용 때문에 Service 레이어에서 통합테스트가 되어야 한다.
+ * 동시성 테스트는 특정 로직구간을 검증하기 위해서 작성했다기 보다는 사용자가 많이 몰리는 경우를 가정한 것이기에 Service 레이어의 메서드를 호출하면서 테스트가 진행되어야 한다.
+ *
+ * 동시성 테스트 즉, 한 스레드가 조회수를 DB에 업데이트 시킬 때 다른 스레드가 조회수를 올리면 조회수가 제대로 올라갈까 하는 동시성 테스트 실행
+ * TopViewRepositoryImplV3에 이미 존재하고 있는 @Scheduled를 사용하기 위해서 시간 타임을 빨리 돌리기 위해서 application.properties 파일 따로 지정
+ * @Scheduled는 처음 시작할 때는 작동하지 않는다.
+ *
+ * -> @Scheduled는 테스트 환경에서는 작동하지 않는다.
  *
  */
-//@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:application-test.properties")
+@Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @SpringBootTest
 public class TopViewServiceTest {
 
     @Autowired TopViewService topViewService;
-    @Autowired private PostService postService;
-    @Autowired private MemberService memberService;
-    @Autowired private StockService stockService;
+    @Autowired TopViewRepositoryImplV3 topViewRepositoryImplV3;
 
-    private Post post1, post2, post3, post4, post5, post6, post7, post8, post9, post10, post11;
-
-    @BeforeEach
-    void setUp() {
-
-        // 실제 엔티티 저장
-        Member member = Member.builder()
-                .name("유저A")
-                .password("1234")
-                .email("a@email.com")
-                .build();
-        memberService.save(member);
-
-        Stock stock = Stock.builder()
-                .companyName("Tesla")
-                .sector("CAR")
-                .ticker("TSLA")
-                .build();
-        stockService.saveStock(stock);
-
-        post1 = SingleStockPost.makeSingleStockPost("내용1", member, stock);
-        post2 = SingleStockPost.makeSingleStockPost("내용2", member, stock);
-        post3 = SingleStockPost.makeSingleStockPost("내용3", member, stock);
-        post4 = SingleStockPost.makeSingleStockPost("내용4", member, stock);
-        post5 = SingleStockPost.makeSingleStockPost("내용5", member, stock);
-        post6 = SingleStockPost.makeSingleStockPost("내용6", member, stock);
-        post7 = SingleStockPost.makeSingleStockPost("내용7", member, stock);
-        post8 = SingleStockPost.makeSingleStockPost("내용8", member, stock);
-        post9 = SingleStockPost.makeSingleStockPost("내용9", member, stock);
-        post10 = SingleStockPost.makeSingleStockPost("내용10", member, stock);
-        post11 = SingleStockPost.makeSingleStockPost("내용11", member, stock);
-
-        post1.increaseViewCount(1L);
-        post2.increaseViewCount(2L);
-        post3.increaseViewCount(3L);
-        post4.increaseViewCount(4L);
-        post5.increaseViewCount(5L);
-        post6.increaseViewCount(6L);
-        post7.increaseViewCount(7L);
-        post8.increaseViewCount(8L);
-        post9.increaseViewCount(9L);
-        post10.increaseViewCount(10L);
-        post11.increaseViewCount(11L);
-
-        postRepository.save(post1);
-        postRepository.save(post2);
-        postRepository.save(post3);
-        postRepository.save(post4);
-        postRepository.save(post5);
-        postRepository.save(post6);
-        postRepository.save(post7);
-        postRepository.save(post8);
-        postRepository.save(post9);
-        postRepository.save(post10);
-        postRepository.save(post11);
-
-        em.flush();
-        em.clear();
-
-    }
 
     @Test
     void synchronizeTest() {
@@ -126,25 +76,25 @@ public class TopViewServiceTest {
             throw new RuntimeException(e);
         }
         executorService.shutdown();
+
     }
 
+    /**
+     * 처음에 topViewRepositoryImplV3.init()을 하지 않고 @PostConstruct 안에 있는 init을 사용하면 된다고 생각했지만
+     * postConstruct는 처음에 스프링부트(빈)이 뜰 때 작동하므로 @SQL이 적용되기 이전 시점에 작동함 따라서 cache에는 아무꺼도 들어가지 않음
+     *
+     * 그러므로 테스트를 띄우고 난 뒤 @SQL이 작동하고 데이터가 DB안에 들어간 뒤 topViewRepositoryImplV#.init()을 직접 호출하여 cache안에 데이터가 들어가게 함
+     */
     @Test
     void getPopularArticles(){
+        topViewRepositoryImplV3.init();
+
         List<Post> result = topViewService.getPopularArticles();
-        assertThat(result.size()).isEqualTo(10);
+        assertThat(result.size()).isEqualTo(1);
         assertThat(result)
                 .extracting(Post::getContent, Post::getViewCount)
                 .containsExactly(
-                        tuple("내용11", 11L),
-                        tuple("내용10", 10L),
-                        tuple("내용9", 9L),
-                        tuple("내용8", 8L),
-                        tuple("내용7", 7L),
-                        tuple("내용6", 6L),
-                        tuple("내용5", 5L),
-                        tuple("내용2", 5L),
-                        tuple("내용4", 4L),
-                        tuple("내용1", 4L)
+                        tuple("tsla1", 0L)
                 );
     }
 

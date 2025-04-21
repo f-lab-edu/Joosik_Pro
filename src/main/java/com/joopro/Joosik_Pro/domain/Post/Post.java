@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Post {
 
+    @Setter
     @Id @GeneratedValue
     @Column(name = "article_id")
     private Long id;

@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -187,6 +187,10 @@ class TopViewRepositoryImplV1Test {
     }
 
 
+    /**
+     * tempViewcount를 AtomicInteger이 아닌 그냥 Integer로 했을 때 동시성 이슈 발생
+     * @throws InterruptedException
+     */
     @Test
     void sameViewUpgradeAtSameTime() throws InterruptedException {
         int threadCount = 150; // 동시에 150번 요청

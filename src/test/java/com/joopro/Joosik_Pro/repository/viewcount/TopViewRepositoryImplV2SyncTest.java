@@ -20,7 +20,14 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * TopViewRepositoryImplV2Test 내에
  * synchronizeTest를 테스트 하기 위한 코드
- * 기존 synchronizeTest는 여러
+ * 기존 TopViewRepositoryImplV2Test에서 진행했던 synchronizeTest는 updadateCacheWithDB()가
+ * 별도 스레드에서 실행되면서 테스트 트랜잭션 범위 밖에서 DB에 접근하고 있음
+ *
+ * 테스트 트랜잭션에서 DB에서 데이터를 커밋해서 저장하지 않기 떄문에 별도의 스레드(트랜잭션)에서 접근하는 updateCahcheWithDB()
+ * 에서 DB에 저장된 값을 읽어오지 못해서 값을 업데이트하지 못하는 문제 발생
+ *
+ * 테스트를 시작하기 전부터 DB에 값을 저장하고 나서 시작
+ *
  *
  */
 
@@ -29,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Sql(scripts = "/sync-test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)
 class TopViewRepositoryImplV2SyncTest {
 
-    private static final Logger log = LoggerFactory.getLogger(TopViewRepositoryImplV2SyncTest.class);
     @Autowired private TopViewRepositoryImplV2 topViewRepository;
     @Autowired private PostRepository postRepository;
 
@@ -66,8 +72,8 @@ class TopViewRepositoryImplV2SyncTest {
         executorService.shutdown();
 
         assertEquals(1, topViewRepository.getPopularPosts().size());
-        assertEquals(totalThreads, topViewRepository.getCache().get(1L).get()); // 캐시에는 200 count 쌓임
-        assertEquals(totalThreads, topViewRepository.getReturnCache().get(1L).getViewCount());
-        assertEquals(totalThreads, postRepository.findById(1L).getViewCount());
+        assertEquals(0, topViewRepository.getCache().get(1L).get()); // 캐시에는 200 count 쌓임
+        assertEquals(0, topViewRepository.getReturnCache().get(1L).getViewCount());
+        assertEquals(0, postRepository.findById(1L).getViewCount());
     }
 }

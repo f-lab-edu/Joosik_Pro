@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,9 +56,10 @@ class TopViewRepositoryImplV3ExTest {
 
         post1.increaseViewCount(5L);
         post2.increaseViewCount(3L);
+        post1.setId(1L);
+        post2.setId(2L);
 
-        postRepository.save(post1);
-        postRepository.save(post2);
+        when(postRepository.getPopularArticles()).thenReturn(List.of(post1, post2));
 
         topViewRepositoryImplV3.init();
     }
@@ -102,7 +104,7 @@ class TopViewRepositoryImplV3ExTest {
         assertThat(popularPosts.size()).isLessThanOrEqualTo(10);
         assertThat(popularPosts.values())
                 .extracting("content", "viewCount")
-                .contains(tuple("애플 분석", 5L), tuple("아이폰 전망", 3L));
+                .contains(tuple("애플 분석", 5L), tuple("애플 전망", 3L));
     }
 }
 

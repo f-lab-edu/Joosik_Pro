@@ -34,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class TopViewRepositoryImplV2Test {
 
-    private static final Logger log = LoggerFactory.getLogger(TopViewRepositoryImplV2Test.class);
     @Autowired private EntityManager em;
     @Autowired private PostRepository postRepository;
     @Autowired private MemberRepository memberRepository;
@@ -208,70 +207,6 @@ class TopViewRepositoryImplV2Test {
         topViewRepository.updateViewCountsToDB();
         assertThat(postRepository.findById(post11.getId()).getViewCount()).isEqualTo(15L);
 
-    }
-
-    @Rollback(false)
-    @Test
-    void synchronizeTest() {
-//        long initialViewCount = post11.getViewCount(); // 11
-//        Post post = em.find(Post.class, 11L);
-//        System.out.println("log1 " + post.getViewCount());
-        int totalThreads = 50;
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        CountDownLatch latch = new CountDownLatch(totalThreads);
-        AtomicInteger counter = new AtomicInteger(0);
-
-        System.out.println("postRepository.findAll()");
-        List<Post> posts = postRepository.findAll();
-        for (Post go : posts) {
-            System.out.println("posts: " + go.getId());
-            System.out.println("posts: " + go.getViewCount());
-        }
-
-        for (int i = 0; i < totalThreads; i++) {
-            executorService.submit(() -> {
-                try {
-                    topViewRepository.bulkUpdatePostViews(post11.getId());
-//                    log.info("current counter : " + counter.get());
-                    if (counter.incrementAndGet() == 50) {
-//                        System.out.println("log4");
-                        topViewRepository.updateCacheWithDB();
-                        System.out.println("executorService: postRepository.findAll()");
-                        List<Post> eposts = postRepository.findAll();
-                        for (Post go : eposts) {
-                            System.out.println("posts: " + go.getId());
-                        }
-                    }
-
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        executorService.shutdown();
-
-        Post post2 = em.find(Post.class, 11L);
-        System.out.println("log5 " + post2.getViewCount());
-        System.out.println("log6");
-        topViewRepository.updateViewCountsToDB();
-
-        Long finalViewCount = postRepository.findById(post11.getId()).getViewCount();
-        System.out.println("finalViewCount : " + finalViewCount);
-//        assertThat(finalViewCount).isEqualTo(initialViewCount + totalThreads);
-
-        System.out.println("postRepository.findAll()");
-        posts = postRepository.findAll();
-        for (Post go : posts) {
-            System.out.println("posts임: " + go.getId());
-        }
-        
     }
 
 
