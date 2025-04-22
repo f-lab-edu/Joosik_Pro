@@ -6,7 +6,10 @@ import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDtoResponse;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Getter;
 
+// 테스트에서 직렬화(Jackson)이 사용할 @Getter
+@Getter
 public class OpinionDtoResponse {
 
     private String memberName;

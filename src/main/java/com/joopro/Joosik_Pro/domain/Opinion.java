@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 출력 방지
@@ -29,11 +31,21 @@ public class Opinion {
 
     private long dislike_sum;
 
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Opinion parentOpinion; // 부모 댓글
+
+    @OneToMany(mappedBy = "parentOpinion", orphanRemoval = true)
+    private List<Opinion> childrenComment = new ArrayList<>();
+
+    private boolean isDeleted;
+
     @Builder
     public Opinion(String comment){
         this.comment = comment;
         this.like_sum = 0L;
         this.dislike_sum = 0L;
+        this.isDeleted = false;
     }
 
     public static Opinion createOpinion(String comment, Post post, Member member){
@@ -65,6 +77,20 @@ public class Opinion {
 
     public void press_dislike(){
         dislike_sum++;
+    }
+
+    public void setParentOpinion(Opinion parentOpinion){
+        this.parentOpinion = parentOpinion;
+        parentOpinion.getChildrenComment().add(this);
+    }
+
+    public void Delete(){
+        this.isDeleted = true;
+
+        for(Opinion child : childrenComment){
+            child.Delete();
+        }
+
     }
 
 }
