@@ -1,0 +1,17 @@
+package com.joopro.Joosik_Pro.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+@RequiredArgsConstructor
+@Service
+public class ChatService {
+
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public void sendMessage(String channelName, String message) {
+        redisTemplate.convertAndSend(channelName, message);
+    }
+
+}
