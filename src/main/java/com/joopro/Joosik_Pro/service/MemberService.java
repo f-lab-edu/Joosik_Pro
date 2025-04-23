@@ -4,7 +4,9 @@ import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.dto.logindto.LoginResponseDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
+import com.joopro.Joosik_Pro.repository.ChatRoomRepository;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
+import com.joopro.Joosik_Pro.service.ChatService.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final ChatRoomService chatRoomService;
+    private final ChatRoomRepository chatRoomRepository;
 
     //로그인 로직
     public LoginResponseDto login(String name, String password) {
@@ -28,7 +32,11 @@ public class MemberService {
         // name은 중복 가능성 있으므로 첫 번째 일치 항목 기준
         for (Member member : members) {
             if (member.getPassword().equals(password)) {
-                
+                Long userId = member.getId();
+                List<String> userJoinedRooms = chatRoomRepository.findRoomKeysByUser(userId);
+                for (String roomId : userJoinedRooms) {
+                    chatRoomService.subscribe(roomId);
+                }
                 return new LoginResponseDto(true, "로그인 성공", MemberDtoResponse.of(member));
             }
         }
@@ -42,6 +50,7 @@ public class MemberService {
         Member member = Member.builder()
                 .name(request.getUsername())
                 .email(request.getEmail())
+                .password(request.getPassword())
                 .build();
         memberRepository.save(member);
 

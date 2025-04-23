@@ -1,8 +1,10 @@
 package com.joopro.Joosik_Pro.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor
 public class ChatMessage {
     private String roomId;
     private String sender;
