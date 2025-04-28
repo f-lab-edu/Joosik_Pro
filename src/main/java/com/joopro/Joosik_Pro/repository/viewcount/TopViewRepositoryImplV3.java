@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Getter private LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
     @Getter private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
 
+    @Transactional
     @PostConstruct
     public void init() {
         updateCacheWithDB();
@@ -36,7 +38,10 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Override
     public Post returnPost(Long postId) {
         Post post = cache.get(postId);
+        log.info("1호출됨");
+
         if(post!= null){
+            log.info("2호출됨");
             tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
 //            tempViewCount.put(postId, tempViewCount.getOrDefault(postId, 0) + 1);
         }else{
@@ -74,12 +79,6 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
             }
         }
         tempViewCount.clear();
-    }
-
-    @Scheduled(cron = "${scheduler.topview.cron}")
-    private void updateCacheWithDBAutomatically() {
-        log.info("스케줄러 동작");
-        this.updateCacheWithDB();
     }
 
 }

@@ -38,6 +38,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
     @Getter // 테스트용 Getter
     private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
 
+    @Transactional
     @PostConstruct
     public void init() {
         updateCacheWithDB();

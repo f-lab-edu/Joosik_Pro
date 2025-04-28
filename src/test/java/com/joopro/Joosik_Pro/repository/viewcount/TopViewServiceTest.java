@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * TopViewRepositoryImplV3에 이미 존재하고 있는 @Scheduled를 사용하기 위해서 시간 타임을 빨리 돌리기 위해서 application.properties 파일 따로 지정
  * @Scheduled는 처음 시작할 때는 작동하지 않는다.
  *
- * -> @Scheduled는 테스트 환경에서는 작동하지 않는다.
+ * -> @Scheduled는 테스트 환경에서는 작동하지 않는다. -> 중간에 직접 호출하는 방식 활용
  *
  */
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -52,18 +52,24 @@ public class TopViewServiceTest {
 
     @Autowired TopViewService topViewService;
     @Autowired TopViewRepositoryImplV3 topViewRepositoryImplV3;
+    @Autowired TopViewSchedulerService topViewSchedulerService;
 
 
     @Test
     void synchronizeTest() {
-        int totalThreads = 200;
+        int totalThreads = 500;
         ExecutorService executorService = Executors.newFixedThreadPool(20);
         CountDownLatch latch = new CountDownLatch(totalThreads);
+        AtomicInteger counter = new AtomicInteger();
 
         for (int i = 0; i < totalThreads; i++) {
             executorService.submit(() -> {
                 try {
                     topViewService.returnPost(1L);
+                    int current = counter.incrementAndGet();
+                    if (current == 250) { // 250번째 호출 중에 스케줄러 실행
+                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                    }
                 } finally {
                     latch.countDown();
                 }
@@ -76,6 +82,9 @@ public class TopViewServiceTest {
             throw new RuntimeException(e);
         }
         executorService.shutdown();
+
+        assertEquals(1, topViewService.getPopularArticles().size());
+        assertEquals(500, TopViewRepositoryImplV3.getTempViewCount().get(1L));
 
     }
 

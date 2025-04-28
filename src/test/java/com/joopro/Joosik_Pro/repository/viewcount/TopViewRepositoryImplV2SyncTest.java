@@ -29,6 +29,19 @@ import static org.junit.jupiter.api.Assertions.*;
  * 테스트를 시작하기 전부터 DB에 값을 저장하고 나서 시작
  *
  *
+ * DB 캐시 업데이트와 @Transactional 적용에 대한 고민
+ * 캐시 업데이트 코드에 @Transactional이 누락
+ * Repositroy 단에 바로 @Transactional을 붙이는 방식과 Service단에서 @Transactional을 호출하는 방식 중 고민
+ * Service 단에서 호출 시, 노출할 필요가 없는 캐시 업데이트 코드가 public으로 열려야 하는 문제 발생
+ * Repository 단에 @Transactional을 바로 넣는 것은 구조적으로 부자연스러움
+ *
+ * 테스트 코드 시 private 메서드에 대한 고민
+ * private 메서드의 테스트 작성이 구조적으로 옳지 않다는 문제 인식
+ *
+ * 결론
+ * @PostConstruct 어노테이션을 사용해 Init() 메서드에 캐시 업데이트 코드를 작성
+ * Init() 메서드를 public으로 열어 호출 가능하게 함
+ * 필요한 부분만 테스트 가능하게 수정
  */
 
 @SpringBootTest
@@ -56,7 +69,8 @@ class TopViewRepositoryImplV2SyncTest {
                 try {
                     topViewRepository.bulkUpdatePostViews(1L);
                     if (counter.incrementAndGet() % 50 == 0) {
-                        topViewRepository.updateCacheWithDB();
+                        System.out.println();
+                        topViewRepository.init();
                     }
                 } finally {
                     latch.countDown();
@@ -72,8 +86,8 @@ class TopViewRepositoryImplV2SyncTest {
         executorService.shutdown();
 
         assertEquals(1, topViewRepository.getPopularPosts().size());
-        assertEquals(0, topViewRepository.getCache().get(1L).get()); // 캐시에는 200 count 쌓임
-        assertEquals(0, topViewRepository.getReturnCache().get(1L).getViewCount());
-        assertEquals(0, postRepository.findById(1L).getViewCount());
+        assertEquals(200, topViewRepository.getCache().get(1L).get()); // 캐시에는 200 count 쌓임
+        assertEquals(200, topViewRepository.getReturnCache().get(1L).getViewCount());
+        assertEquals(200, postRepository.findById(1L).getViewCount());
     }
 }
