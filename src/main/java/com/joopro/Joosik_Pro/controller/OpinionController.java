@@ -32,6 +32,12 @@ public class OpinionController {
         return Result.ok(opinionDtoResponses);
     }
 
+    @DeleteMapping("/delete/{id}")
+    public Result<String> deleteOpinion(@PathVariable("id") Long id) {
+        opinionService.deleteOpinion(id);
+        return Result.ok("deleted");
+    }
+
     @PatchMapping("/update/{id}")
     public Result<String> updateOpinion(@PathVariable("id") Long id, @RequestParam String comment) {
         opinionService.changeOpinion(id, comment);

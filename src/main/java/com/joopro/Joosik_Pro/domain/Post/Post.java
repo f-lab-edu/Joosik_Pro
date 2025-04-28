@@ -45,7 +45,6 @@ public abstract class Post extends BaseEntity {
 
     public void addOpinion(Opinion opinion) {
         opinionList.add(opinion);
-        opinion.setPost(this);
     }
 
     public void increaseViewCount(Long viewCount) {
