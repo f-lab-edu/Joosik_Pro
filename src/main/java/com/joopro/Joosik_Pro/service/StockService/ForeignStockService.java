@@ -1,9 +1,8 @@
-    package com.joopro.Joosik_Pro.service;
+    package com.joopro.Joosik_Pro.service.StockService;
 
     import com.fasterxml.jackson.core.JsonProcessingException;
     import com.fasterxml.jackson.databind.JsonNode;
     import com.fasterxml.jackson.databind.ObjectMapper;
-    import com.joopro.Joosik_Pro.domain.DomesticStock;
     import com.joopro.Joosik_Pro.domain.ForeignStock;
     import com.joopro.Joosik_Pro.repository.ForeignStockRepository;
     import lombok.RequiredArgsConstructor;

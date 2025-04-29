@@ -36,6 +36,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'com.influxdb:influxdb-client-java:6.10.0'
+
+	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+
 }
 
 tasks.named('test') {
