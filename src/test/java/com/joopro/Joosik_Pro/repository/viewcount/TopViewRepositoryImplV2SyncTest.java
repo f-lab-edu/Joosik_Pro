@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+<<<<<<< HEAD
 /**
  * TopViewRepositoryImplV2Test 내에
  * synchronizeTest를 테스트 하기 위한 코드
@@ -51,7 +52,6 @@ class TopViewRepositoryImplV2SyncTest {
 
     @Autowired private TopViewRepositoryImplV2 topViewRepository;
     @Autowired private PostRepository postRepository;
-
     @BeforeEach
     void setUp() {
         topViewRepository.updateCacheWithDB();
@@ -69,7 +69,6 @@ class TopViewRepositoryImplV2SyncTest {
                 try {
                     topViewRepository.bulkUpdatePostViews(1L);
                     if (counter.incrementAndGet() % 50 == 0) {
-                        System.out.println();
                         topViewRepository.init();
                     }
                 } finally {

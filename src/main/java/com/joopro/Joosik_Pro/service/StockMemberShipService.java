@@ -9,6 +9,7 @@ import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
 import com.joopro.Joosik_Pro.dto.stockdto.FindStockDto;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDtoResponse;
 import com.joopro.Joosik_Pro.repository.StockMemberShipRepository;
+import com.joopro.Joosik_Pro.service.StockService.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

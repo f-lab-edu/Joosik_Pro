@@ -46,7 +46,6 @@ public abstract class Post {
 
     public void addOpinion(Opinion opinion) {
         opinionList.add(opinion);
-        opinion.setPost(this);
     }
 
     public void increaseViewCount(Long viewCount) {

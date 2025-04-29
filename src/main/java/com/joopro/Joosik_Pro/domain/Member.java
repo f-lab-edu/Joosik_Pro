@@ -31,6 +31,10 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<Opinion> opinions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member")
+    private List<ChatRoomUser> chatRoomUsers = new ArrayList<>();
+
+
     @Builder
     public Member(String name, String password, String email){
         this.name = name;
@@ -52,6 +56,11 @@ public class Member {
     public void addStockMemberShip(StockMembership stockMembership){
         memberships.add(stockMembership);
     }
+
+    public void addChatRoomUsers(ChatRoomUser chatRoomUser){
+        chatRoomUsers.add(chatRoomUser);
+    }
+
 
     // 변경 메서드 추가 (setter 대체)
     public void updateMember(String name, String password, String email) {

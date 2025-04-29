@@ -10,6 +10,7 @@ import com.joopro.Joosik_Pro.dto.postdto.CreateVsStockPostDto;
 import com.joopro.Joosik_Pro.dto.postdto.SingleStockPostDtoResponse;
 import com.joopro.Joosik_Pro.dto.postdto.VsStockPostDtoResponse;
 import com.joopro.Joosik_Pro.repository.PostRepository;
+import com.joopro.Joosik_Pro.service.StockService.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

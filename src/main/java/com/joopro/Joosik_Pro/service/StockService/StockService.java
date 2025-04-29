@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.service;
+package com.joopro.Joosik_Pro.service.StockService;
 
 import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.dto.stockdto.StockDetailDto;
