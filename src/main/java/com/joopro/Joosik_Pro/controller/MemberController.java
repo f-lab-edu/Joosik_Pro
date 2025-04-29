@@ -1,5 +1,7 @@
 package com.joopro.Joosik_Pro.controller;
 
+import com.joopro.Joosik_Pro.dto.logindto.LoginRequestDto;
+import com.joopro.Joosik_Pro.dto.logindto.LoginResponseDto;
 import com.joopro.Joosik_Pro.dto.memberdto.CreateRequestMemberDto;
 import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
 import com.joopro.Joosik_Pro.dto.Result;
@@ -16,6 +18,17 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+
+    @PostMapping("/api/members/login")
+    public Result<LoginResponseDto> login(@RequestBody LoginRequestDto request) {
+        LoginResponseDto response = memberService.login(request.getName(), request.getPassword());
+        if (response.isSuccess()) {
+            return Result.ok(response);
+        } else {
+            return Result.of(HttpStatus.UNAUTHORIZED, response.getMessage(), response);
+        }
+    }
+
 
     // 멤버 전체 리스트 반환
     @GetMapping("/api/members")
