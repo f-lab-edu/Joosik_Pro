@@ -14,8 +14,9 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED) // 상속 전략 설정
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Post extends BaseEntity {
+public abstract class Post {
 
+    @Setter
     @Id @GeneratedValue
     @Column(name = "article_id")
     private Long id;
@@ -50,5 +51,10 @@ public abstract class Post extends BaseEntity {
     public void increaseViewCount(Long viewCount) {
         this.viewCount += viewCount;
     }
+
+    public void setViewCount(Long viewCount){
+        this.viewCount = viewCount;
+    }
+
 
 }

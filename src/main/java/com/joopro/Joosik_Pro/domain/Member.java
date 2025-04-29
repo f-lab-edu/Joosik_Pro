@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
-public class Member extends BaseEntity{
+public class Member {
     @Id @GeneratedValue
     @Column(name = "member_id")
     private Long id;

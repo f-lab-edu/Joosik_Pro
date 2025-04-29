@@ -3,10 +3,15 @@ package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
+import com.sun.jdi.LongType;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
+import java.sql.SQLOutput;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +30,26 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
 
     private final PostRepository postRepository;
     private final EntityManager em;
+    @Getter
     private static AtomicInteger cacheHit = new AtomicInteger();
     private static LinkedHashMap<Long, Post> Top100Post = new LinkedHashMap<>();
+    @Getter
     private static final Map<Long, Integer> tempViewCount = new ConcurrentHashMap<>();
 
 
+    @PostConstruct
+    public void init() {
+        updateCacheWithDB();
+    }
+
     @Override
     public void bulkUpdatePostViews(Long postId) {
-        updateViewCountsToDB(postId);
+        tempViewCount.put(postId, tempViewCount.getOrDefault(postId, 0) + 1);
+
+        if (cacheHit.incrementAndGet() >= 100) {
+            updateViewCountsToDB();
+            cacheHit.set(0);
+        }
     }
 
 
@@ -42,39 +59,54 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
         return Top100Post;
     }
 
-    public LinkedHashMap<Long, Post> updateCache() {
-        List<Post> topPosts = em.createQuery("SELECT p FROM Post p ORDER BY p.viewCount DESC", Post.class)
-                .setMaxResults(100)
-                .getResultList();
+    /**
+     * ImplV1에서는 조회수가 실시간으로 cache에 반영되지 않기때문에 그냥 updateCacheWithDB로 내부적으로 동작하게 해두겠습니다.
+     */
+    public void updateCacheInLocal() {
+        updateCacheWithDB();
+    }
+
+    public void updateCacheWithDB() {
+        updateViewCountsToDB();
+        List<Post> topPosts = postRepository.getPopularArticles();
 
         LinkedHashMap<Long, Post> cacheMap = new LinkedHashMap<>();
         for (Post post : topPosts) {
             cacheMap.put(post.getId(), post);
         }
         Top100Post = cacheMap;
-        return Top100Post;
     }
 
-    // tempviewCount가 100개 들어올때까지 저장, tempViewCount가 100개 넘었을 때 updateViewCountsToDB 호출, DB와 sync 맞추기
-    public void updateViewCountsToDB(Long postId) {
-
-        tempViewCount.put(postId, tempViewCount.getOrDefault(postId, 0) + 1);
-
-        if (cacheHit.incrementAndGet() >= 100) {
-            syncViewCountsToDB();
-            cacheHit.set(0);
-        }
-    }
 
     // DB와 sync 맞추는 코드
-    public void syncViewCountsToDB() {
+    public void updateViewCountsToDB() {
         for(Map.Entry<Long, Integer> entry : tempViewCount.entrySet()){
-            em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
-                    .setParameter("increment", entry.getValue())
-                    .setParameter("postId", entry.getKey())
-                    .executeUpdate();
+            Long firstValue = postRepository.findById(entry.getKey()).getViewCount();
+            Post post = postRepository.findById(entry.getKey());
+            post.setViewCount(Long.valueOf(firstValue + entry.getValue()));
+            System.out.println(postRepository.findById(entry.getKey()).getViewCount());
+
+            // 이게 왜 안되지?
+//            em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
+//                    .setParameter("increment", entry.getValue())
+//                    .setParameter("postId", entry.getKey())
+//                    .executeUpdate();
+//            System.out.println(entry.getKey());
+//            System.out.println(entry.getValue());
+//
+//            System.out.println(postRepository.findById(entry.getKey()).getViewCount());
         }
         tempViewCount.clear();
+    }
+
+    @Scheduled(fixedRate = 600000)
+    private void updateCacheWithDBAutomatically() {
+        this.updateCacheWithDB();
+    }
+
+    @Scheduled(fixedRate = 30000)
+    private void updateCacheInLocalAutomatically(){
+        this.updateCacheInLocal();
     }
 
 
