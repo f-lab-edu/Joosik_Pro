@@ -17,7 +17,6 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-<<<<<<< HEAD
 /**
  * TopViewRepositoryImplV2Test 내에
  * synchronizeTest를 테스트 하기 위한 코드

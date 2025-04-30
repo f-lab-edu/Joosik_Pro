@@ -43,10 +43,9 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         if(post!= null){
             log.info("2호출됨");
             tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
-//            tempViewCount.put(postId, tempViewCount.getOrDefault(postId, 0) + 1);
         }else{
-            post = postRepository.findById(postId);
-            post.increaseViewCount(1L);
+            log.info("3호출됨");
+            postRepository.increaseViewCount(postId, 1L);
         }
         return post;
     }

@@ -1,28 +1,14 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
-import com.joopro.Joosik_Pro.domain.Member;
 import com.joopro.Joosik_Pro.domain.Post.Post;
-import com.joopro.Joosik_Pro.domain.Post.SingleStockPost;
-import com.joopro.Joosik_Pro.domain.Stock;
-import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.PostRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
-import com.joopro.Joosik_Pro.service.MemberService;
-import com.joopro.Joosik_Pro.service.PostService;
-import com.joopro.Joosik_Pro.service.StockService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
-import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -53,6 +39,8 @@ public class TopViewServiceTest {
     @Autowired TopViewService topViewService;
     @Autowired TopViewRepositoryImplV3 topViewRepositoryImplV3;
     @Autowired TopViewSchedulerService topViewSchedulerService;
+    @Autowired
+    PostRepository postRepository;
 
 
     @Test
@@ -83,8 +71,11 @@ public class TopViewServiceTest {
         }
         executorService.shutdown();
 
+        topViewRepositoryImplV3.init();
+
         assertEquals(1, topViewService.getPopularArticles().size());
-        assertEquals(500, TopViewRepositoryImplV3.getTempViewCount().get(1L));
+//        assertEquals(500, TopViewRepositoryImplV3.getTempViewCount().get(1L));
+        assertEquals(500, postRepository.findById(1L).getViewCount());
 
     }
 
