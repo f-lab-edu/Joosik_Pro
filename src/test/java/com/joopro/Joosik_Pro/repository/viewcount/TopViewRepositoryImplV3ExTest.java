@@ -61,7 +61,7 @@ class TopViewRepositoryImplV3ExTest {
 
         when(postRepository.getPopularArticles()).thenReturn(List.of(post1, post2));
 
-        topViewRepositoryImplV3.init();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
     }
 
     @AfterEach
@@ -90,7 +90,7 @@ class TopViewRepositoryImplV3ExTest {
         // Mock 설정
         when(postRepository.findById(post2.getId())).thenReturn(post2);
 
-        topViewRepositoryImplV3.init();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
         assertThat(post2.getViewCount()).isEqualTo(5L); // 기존 3 + 2
         assertThat(TopViewRepositoryImplV3.getTempViewCount()).isEmpty();

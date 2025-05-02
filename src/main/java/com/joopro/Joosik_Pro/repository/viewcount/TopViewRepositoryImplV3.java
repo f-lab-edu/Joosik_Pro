@@ -31,7 +31,12 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
 
     @Transactional
     @PostConstruct
-    public void init() {
+    protected void init() {
+        updateCacheWithDB();
+    }
+
+    @Override
+    public void updateCacheWithDBAutomatically(){
         updateCacheWithDB();
     }
 
@@ -43,11 +48,13 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         if(post!= null){
             log.info("2호출됨");
             tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
+            return post;
         }else{
             log.info("3호출됨");
-            postRepository.increaseViewCount(postId, 1L);
+            Post post2 = postRepository.findById(postId);
+            post2.increaseViewCount(1L);
+            return post2;
         }
-        return post;
     }
 
     @Override

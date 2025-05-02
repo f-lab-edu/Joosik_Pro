@@ -65,7 +65,7 @@ class TopViewRepositoryImplV3Test {
         em.flush();
         em.clear();
 
-        topViewRepositoryImplV3.init(); // PostConstruct 수동 호출
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically(); // PostConstruct 수동 호출
     }
 
     @AfterEach
@@ -91,7 +91,7 @@ class TopViewRepositoryImplV3Test {
         topViewRepositoryImplV3.returnPost(post2.getId());
         topViewRepositoryImplV3.returnPost(post2.getId());
 
-        topViewRepositoryImplV3.init(); // updateViewCountsToDB 포함
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically(); // updateViewCountsToDB 포함
 
         Post updatedPost = postRepository.findById(post2.getId());
         assertThat(updatedPost.getViewCount()).isEqualTo(5L); // 기존 3L + 2
