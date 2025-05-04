@@ -8,6 +8,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -31,7 +32,19 @@ public class DomesticStockLiveService {
 
     private WebSocketClient client;
 
+    private static final int RECONNECT_DELAY_MS = 3000; // 3초 후 재연결
+    private static final int MAX_RECONNECT_ATTEMPTS = 5; // 최대 재시도 5번
+
+    private int reconnectAttempts = 0;
+    private String currentStockCode; // 현재 구독 중인 종목코드 저장
+
+
     public void startLiveStream(String stockCode) {
+        this.currentStockCode = stockCode;
+        connectWebSocket();
+    }
+
+    private void connectWebSocket() {
         try {
             URI uri = new URI("ws://ops.koreainvestment.com:31000/tryitout/H0STCNT0");
 
@@ -39,6 +52,7 @@ public class DomesticStockLiveService {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     log.info("WebSocket 연결");
+                    reconnectAttempts = 0; // 연결 성공하면 재시도 횟수 초기화
 
                     String request = String.format(
                             """
@@ -56,22 +70,18 @@ public class DomesticStockLiveService {
                                 }
                               }
                             }
-                            """, approvalKey, stockCode
+                            """, approvalKey, currentStockCode
                     );
 
                     send(request);
-                    log.info("실시간 시세 요청 전송 완료: {}", stockCode);
+                    log.info("실시간 시세 요청 전송 완료: {}", currentStockCode);
                 }
 
                 @Override
                 public void onMessage(String message) {
                     log.info("수신된 실시간 메시지: {}", message);
                     try {
-                        // 예: "005930^092210^56650^2^450^0.80^..."
                         String[] parts = message.split("\\^");
-                        for(String go : parts){
-                            System.out.println(go);
-                        }
 
                         String stockCode = parts[0];
                         long currentPrice = Long.parseLong(parts[2]);
@@ -95,11 +105,13 @@ public class DomesticStockLiveService {
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
                     log.warn("WebSocket 종료 - Code: {}, Reason: {}", code, reason);
+                    attemptReconnect();
                 }
 
                 @Override
                 public void onError(Exception ex) {
                     log.error("WebSocket 에러 발생", ex);
+                    attemptReconnect();
                 }
             };
 
@@ -107,6 +119,25 @@ public class DomesticStockLiveService {
 
         } catch (Exception e) {
             log.error("WebSocket 연결 중 예외 발생", e);
+            attemptReconnect();
+        }
+    }
+
+    @Async
+    protected void attemptReconnect() {
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            log.info("WebSocket 재연결 시도 ({} / {})", reconnectAttempts, MAX_RECONNECT_ATTEMPTS);
+
+            try {
+                Thread.sleep(RECONNECT_DELAY_MS);
+                connectWebSocket(); // 다시 연결 시도
+            } catch (InterruptedException e) {
+                log.error("재연결 대기 중 인터럽트 발생", e);
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            log.error("WebSocket 최대 재연결 시도 초과. 연결 포기");
         }
     }
 
