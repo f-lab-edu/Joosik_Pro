@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,11 +40,13 @@ public class RedisTopViewRepositoryImpl implements TopViewRepositoryV2 {
     private static final LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
     private static final String POPULAR_POSTS_SET_KEY = "popularPostsZSet";
 
+    @Transactional
     @PostConstruct
-    private void init() {
+    protected void init() {
         updateCacheWithDB();
     }
 
+    @Transactional
     @Override
     public void updateCacheWithDBAutomatically() {
         updateCacheWithDB();
@@ -68,7 +72,7 @@ public class RedisTopViewRepositoryImpl implements TopViewRepositoryV2 {
         redisTemplate.delete(POPULAR_POSTS_SET_KEY);
         cache.clear();
 
-        var topPosts = postRepository.getPopularArticles();
+        List<Post> topPosts = postRepository.getPopularArticles();
         for (Post post : topPosts) {
             Long postId = post.getId();
             redisTemplate.opsForZSet().add(POPULAR_POSTS_SET_KEY,
