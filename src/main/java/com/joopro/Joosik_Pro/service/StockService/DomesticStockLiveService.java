@@ -13,11 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * @Async를 붙여서 메인 쓰레드가 멈추지 않고 재연결 시도를 백그라운드에서 별도 쓰레드로 작업
@@ -55,57 +54,70 @@ public class DomesticStockLiveService {
     private static final int RECONNECT_DELAY_MS = 3000; // 3초 후 재연결
     private static final int MAX_RECONNECT_ATTEMPTS = 5; // 최대 재시도 5번
 
-    private final Map<String, WebSocketClient> clientMap = new ConcurrentHashMap<>();
-    private final Map<String, Integer> reconnectAttempts = new ConcurrentHashMap<>();
+    private static final int MAX_SYMBOLS_PER_SOCKET = 40; // 소켓 당 최대 40개
+
+    private final List<WebSocketClient> clients = new CopyOnWriteArrayList<>(); // 웹소켓 목록
+    private final Map<WebSocketClient, Set<String>> clientSymbolsMap = new ConcurrentHashMap<>(); // 웹소켓 당 연결되어 있는 종목 set
+    private final Map<String, WebSocketClient> symbolToClient = new ConcurrentHashMap<>(); // 각 종목이 어디 웹소켓에 연결되어 있는지 확인하는 맵
+    private final Map<WebSocketClient, Integer> reconnectAttempts = new ConcurrentHashMap<>(); // 웹소켓 끊겼을 때 재연결 시도 횟수
 
     public void startLiveStream(String stockCode) {
-        if(clientMap.containsKey(stockCode)) {
+        if(symbolToClient.containsKey(stockCode)) {
             log.info("이미 구독 중인 종목입니다 : {}", stockCode);
             return;
         }
-        connectWebSocket(stockCode);
+
+        WebSocketClient assignedClient = null;
+
+        for(WebSocketClient webSocketClient : clients){
+            if(clientSymbolsMap.get(webSocketClient).size() < MAX_SYMBOLS_PER_SOCKET){
+                assignedClient = webSocketClient;
+                break;
+            }
+        }
+
+        if (assignedClient == null) {
+            assignedClient = createNewWebSocketClient();
+            clients.add(assignedClient);
+            clientSymbolsMap.put(assignedClient, ConcurrentHashMap.newKeySet());
+            reconnectAttempts.put(assignedClient, 0);
+            assignedClient.connect();
+        }
+
+        clientSymbolsMap.get(assignedClient).add(stockCode);
+        symbolToClient.put(stockCode, assignedClient);
+
+        if (assignedClient.isOpen()) {
+            sendSubscribeRequest(assignedClient, stockCode);
+        }
+
     }
 
-    private void connectWebSocket(String stockCode) {
+    private WebSocketClient createNewWebSocketClient() {
         try {
             URI uri = new URI("ws://ops.koreainvestment.com:31000/tryitout/H0STCNT0");
 
-            WebSocketClient client = new WebSocketClient(uri) {
+            return new WebSocketClient(uri) {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
-                    log.info("WebSocket 연결");
-                    reconnectAttempts.put(stockCode, 0); // 연결 성공하면 재시도 횟수 초기화
+                    log.info("WebSocket 연결 성공");
+                    reconnectAttempts.put(this, 0);
 
-                    String request = String.format(
-                            """
-                            {
-                              "header": {
-                                "approval_key": "%s",
-                                "custtype": "P",
-                                "tr_type": "1",
-                                "content-type": "utf-8"
-                              },
-                              "body": {
-                                "input": {
-                                  "tr_id": "H0STCNT0",
-                                  "tr_key": "%s"
-                                }
-                              }
-                            }
-                            """, approvalKey, stockCode);
-
-                    send(request);
+                    Set<String> symbols = clientSymbolsMap.get(this);
+                    for (String code : symbols) {
+                        sendSubscribeRequest(this, code);
+                    }
                 }
 
                 @Override
                 public void onMessage(String message) {
-                    log.info("실시간 수신 [{}]: {}", stockCode, message);
                     try {
                         String[] parts = message.split("\\^");
                         String stockCode = parts[0];
                         long currentPrice = Long.parseLong(parts[2]);
                         long volume = Long.parseLong(parts[13]);
 
+                        // InfluxDB에 데이터 쓰는 코드
                         Point point = Point
                                 .measurement("stock_price")
                                 .addTag("code", stockCode)
@@ -114,64 +126,98 @@ public class DomesticStockLiveService {
                                 .time(Instant.now(), WritePrecision.MS);
 
                         writeApi.writePoint(point);
-                        log.info("InfluxDB에 저장 완료: {}", stockCode);
-
+                        log.info("InfluxDB 저장 완료: {}", stockCode);
                     } catch (Exception e) {
-                        log.error("메시지 파싱 또는 InfluxDB 저장 중 오류", e);
+                        log.error("메시지 파싱 또는 저장 오류", e);
                     }
                 }
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
                     log.warn("WebSocket 종료 - Code: {}, Reason: {}", code, reason);
-                    scheduleReconnect(stockCode);
+                    scheduleReconnect(this);
                 }
 
                 @Override
                 public void onError(Exception ex) {
                     log.error("WebSocket 에러 발생", ex);
-                    scheduleReconnect(stockCode);
+                    scheduleReconnect(this);
                 }
             };
 
-            client.connect();
-
         } catch (Exception e) {
-            log.error("WebSocket 연결 중 예외 발생", e);
-            scheduleReconnect(stockCode);
+            throw new RuntimeException("WebSocketClient 생성 실패", e);
         }
     }
 
+    private void sendSubscribeRequest(WebSocketClient client, String stockCode) {
+        String request = String.format("""
+                {
+                  "header": {
+                    "approval_key": "%s",
+                    "custtype": "P",
+                    "tr_type": "1",
+                    "content-type": "utf-8"
+                  },
+                  "body": {
+                    "input": {
+                      "tr_id": "H0STCNT0",
+                      "tr_key": "%s"
+                    }
+                  }
+                }
+                """, approvalKey, stockCode);
+        client.send(request);
+        log.info("구독 요청 보냄: {}", stockCode);
+    }
+
+
     @Async
-    protected void scheduleReconnect(String stockCode) {
-        int attempts = reconnectAttempts.getOrDefault(stockCode, 0);
+    protected void scheduleReconnect(WebSocketClient client) {
+        int attempts = reconnectAttempts.getOrDefault(client, 0);
 
         if (attempts < MAX_RECONNECT_ATTEMPTS) {
-            reconnectAttempts.put(stockCode, attempts + 1);
-
-            scheduler.schedule(()-> connectWebSocket(stockCode),
-                    RECONNECT_DELAY_MS, TimeUnit.MILLISECONDS);
+            reconnectAttempts.put(client, attempts + 1);
+            scheduler.schedule(() -> {
+                log.info("WebSocket 재연결 시도...");
+                client.reconnect();
+            }, RECONNECT_DELAY_MS, TimeUnit.MILLISECONDS);
         } else {
-            log.error("WebSocket 최대 재연결 시도 초과. 연결 포기");
-            clientMap.remove(stockCode);
+            log.error("재연결 최대 시도 초과. 이 WebSocket은 더 이상 사용되지 않음");
+            Set<String> symbols = clientSymbolsMap.remove(client);
+            if (symbols != null) {
+                symbols.forEach(symbolToClient::remove);
+            }
+            clients.remove(client);
+            reconnectAttempts.remove(client);
         }
     }
 
     public void stopLiveStream(String stockCode) {
-        WebSocketClient client = clientMap.get(stockCode);
-        if (client != null && client.isOpen()) {
-            client.close();
-            log.info("WebSocket 수동 종료 요청 [{}]", stockCode);
+        WebSocketClient client = symbolToClient.remove(stockCode);
+        if (client != null) {
+            Set<String> symbols = clientSymbolsMap.get(client);
+            if (symbols != null) {
+                symbols.remove(stockCode);
+                log.info("구독 중단: {}", stockCode);
+            }
+
+            // 소켓에 더 이상 종목이 없으면 소켓 종료
+            if (symbols != null && symbols.isEmpty()) {
+                client.close();
+                clients.remove(client);
+                clientSymbolsMap.remove(client);
+                reconnectAttempts.remove(client);
+                log.info("WebSocket 연결 종료 (더 이상 구독 없음)");
+            }
         }
-        clientMap.remove(stockCode);
-        reconnectAttempts.remove(stockCode);
     }
 
     public void stopAllStreams() {
-        clientMap.forEach((code, client) -> {
-            if (client.isOpen()) client.close();
-        });
-        clientMap.clear();
+        clients.forEach(WebSocketClient::close);
+        clients.clear();
+        clientSymbolsMap.clear();
+        symbolToClient.clear();
         reconnectAttempts.clear();
         log.info("모든 WebSocket 스트림 종료");
     }
