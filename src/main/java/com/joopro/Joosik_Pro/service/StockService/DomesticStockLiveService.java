@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @Async를 붙여서 메인 쓰레드가 멈추지 않고 재연결 시도를 백그라운드에서 별도 쓰레드로 작업
@@ -30,6 +31,10 @@ import java.util.concurrent.*;
  *
  * 이미 웹소켓이 연결되어 있을 때 중복 연결 시키는 경우를 막기 위해서
  * 연결되어 있는 웹소켓 관리, ConcurrentHashMap을 이용하여 관리
+ *
+ * stopLiveStream,, startLiveStream에서 symbolToClient를 확인하는 과정에서 동시성 이슈 발생 가능성 존재
+ * 메서드에 synchronized를 붙이더라도 stopLivestream과 startLivestream을 동시에 돌리면 존재 유무를 확인하고 넘어가는 동안 map에 있는 데이터 삭제 가능
+ * -> ReentrantLock 사용
  *
  */
 
@@ -56,41 +61,44 @@ public class DomesticStockLiveService {
 
     private static final int MAX_SYMBOLS_PER_SOCKET = 40; // 소켓 당 최대 40개
 
+    private final ReentrantLock lock = new ReentrantLock();
+
     private final List<WebSocketClient> clients = new CopyOnWriteArrayList<>(); // 웹소켓 목록
     private final Map<WebSocketClient, Set<String>> clientSymbolsMap = new ConcurrentHashMap<>(); // 웹소켓 당 연결되어 있는 종목 set
     private final Map<String, WebSocketClient> symbolToClient = new ConcurrentHashMap<>(); // 각 종목이 어디 웹소켓에 연결되어 있는지 확인하는 맵
     private final Map<WebSocketClient, Integer> reconnectAttempts = new ConcurrentHashMap<>(); // 웹소켓 끊겼을 때 재연결 시도 횟수
 
     public void startLiveStream(String stockCode) {
-        if(symbolToClient.containsKey(stockCode)) {
-            log.info("이미 구독 중인 종목입니다 : {}", stockCode);
-            return;
-        }
+        lock.lock();
+        try{
+            if(symbolToClient.containsKey(stockCode)) {
+                log.info("이미 구독 중인 종목입니다 : {}", stockCode);
+                return;
+            }
+            WebSocketClient assignedClient = null;
+            for(WebSocketClient webSocketClient : clients){
+                if(clientSymbolsMap.get(webSocketClient).size() < MAX_SYMBOLS_PER_SOCKET){
+                    assignedClient = webSocketClient;
+                    break;
+                }
+            }
+            if (assignedClient == null) {
+                assignedClient = createNewWebSocketClient();
+                clients.add(assignedClient);
+                clientSymbolsMap.put(assignedClient, ConcurrentHashMap.newKeySet());
+                reconnectAttempts.put(assignedClient, 0);
+                assignedClient.connect();
+            }
+            clientSymbolsMap.get(assignedClient).add(stockCode);
+            symbolToClient.put(stockCode, assignedClient);
 
-        WebSocketClient assignedClient = null;
-
-        for(WebSocketClient webSocketClient : clients){
-            if(clientSymbolsMap.get(webSocketClient).size() < MAX_SYMBOLS_PER_SOCKET){
-                assignedClient = webSocketClient;
-                break;
+            if (assignedClient.isOpen()) {
+                sendSubscribeRequest(assignedClient, stockCode);
             }
         }
-
-        if (assignedClient == null) {
-            assignedClient = createNewWebSocketClient();
-            clients.add(assignedClient);
-            clientSymbolsMap.put(assignedClient, ConcurrentHashMap.newKeySet());
-            reconnectAttempts.put(assignedClient, 0);
-            assignedClient.connect();
+        finally{
+            lock.unlock();
         }
-
-        clientSymbolsMap.get(assignedClient).add(stockCode);
-        symbolToClient.put(stockCode, assignedClient);
-
-        if (assignedClient.isOpen()) {
-            sendSubscribeRequest(assignedClient, stockCode);
-        }
-
     }
 
     private WebSocketClient createNewWebSocketClient() {
@@ -194,32 +202,27 @@ public class DomesticStockLiveService {
     }
 
     public void stopLiveStream(String stockCode) {
-        WebSocketClient client = symbolToClient.remove(stockCode);
-        if (client != null) {
-            Set<String> symbols = clientSymbolsMap.get(client);
-            if (symbols != null) {
-                symbols.remove(stockCode);
-                log.info("구독 중단: {}", stockCode);
-            }
+        lock.lock();
+        try{
+            WebSocketClient client = symbolToClient.remove(stockCode);
+            if (client != null) {
+                Set<String> symbols = clientSymbolsMap.get(client);
+                if (symbols != null) {
+                    symbols.remove(stockCode);
+                    log.info("구독 중단: {}", stockCode);
+                }
 
-            // 소켓에 더 이상 종목이 없으면 소켓 종료
-            if (symbols != null && symbols.isEmpty()) {
-                client.close();
-                clients.remove(client);
-                clientSymbolsMap.remove(client);
-                reconnectAttempts.remove(client);
-                log.info("WebSocket 연결 종료 (더 이상 구독 없음)");
+                // 소켓에 더 이상 종목이 없으면 소켓 종료
+                if (symbols != null && symbols.isEmpty()) {
+                    client.close();
+                    clients.remove(client);
+                    clientSymbolsMap.remove(client);
+                    reconnectAttempts.remove(client);
+                    log.info("WebSocket 연결 종료 (더 이상 구독 없음)");
+                }
             }
+        }finally {
+            lock.unlock();
         }
     }
-
-    public void stopAllStreams() {
-        clients.forEach(WebSocketClient::close);
-        clients.clear();
-        clientSymbolsMap.clear();
-        symbolToClient.clear();
-        reconnectAttempts.clear();
-        log.info("모든 WebSocket 스트림 종료");
-    }
-
 }
