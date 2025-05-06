@@ -85,16 +85,6 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
             Post post = postRepository.findById(entry.getKey());
             post.setViewCount(Long.valueOf(firstValue + entry.getValue()));
             System.out.println(postRepository.findById(entry.getKey()).getViewCount());
-
-            // 이게 왜 안되지?
-//            em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
-//                    .setParameter("increment", entry.getValue())
-//                    .setParameter("postId", entry.getKey())
-//                    .executeUpdate();
-//            System.out.println(entry.getKey());
-//            System.out.println(entry.getValue());
-//
-//            System.out.println(postRepository.findById(entry.getKey()).getViewCount());
         }
         tempViewCount.clear();
     }

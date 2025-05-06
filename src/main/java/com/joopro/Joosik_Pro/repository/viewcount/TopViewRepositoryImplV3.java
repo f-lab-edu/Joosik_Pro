@@ -25,9 +25,8 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
 
     private final PostRepository postRepository;
 
-    // 테스트용 Getter
-    @Getter private LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
-    @Getter private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
+    private static LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
+    private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
 
     @Transactional
     @PostConstruct
@@ -35,6 +34,7 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         updateCacheWithDB();
     }
 
+    @Transactional
     @Override
     public void updateCacheWithDBAutomatically(){
         updateCacheWithDB();
@@ -43,14 +43,11 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Override
     public Post returnPost(Long postId) {
         Post post = cache.get(postId);
-        log.info("1호출됨");
 
         if(post!= null){
-            log.info("2호출됨");
             tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
             return post;
         }else{
-            log.info("3호출됨");
             Post post2 = postRepository.findById(postId);
             post2.increaseViewCount(1L);
             return post2;
@@ -86,5 +83,14 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         }
         tempViewCount.clear();
     }
+
+    private static Map<Long, AtomicInteger> getTempViewCountForTest() {
+        return tempViewCount;
+    }
+
+    private static LinkedHashMap<Long, Post> getCacheForTest() {
+        return cache;
+    }
+
 
 }

@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,34 +70,38 @@ class TopViewRepositoryImplV3Test {
     }
 
     @AfterEach
-    void clearCache() {
-        topViewRepositoryImplV3.getCache().clear();
-        TopViewRepositoryImplV3.getTempViewCount().clear();
+    void clearCache() throws Exception {
+        LinkedHashMap<Long, Post> cache = accessCacheByReflection();
+        Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
+        cache.clear();
+        tempViewMap.clear();
     }
 
     @Test
     @DisplayName("조회수를 올리면 tempViewCount에 값이 누적된다.")
-    void updateTempViewCountTest() {
+    void updateTempViewCountTest() throws Exception {
         topViewRepositoryImplV3.returnPost(post1.getId());
         topViewRepositoryImplV3.returnPost(post1.getId());
 
-        AtomicInteger count = TopViewRepositoryImplV3.getTempViewCount().get(post1.getId());
+        Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
+
+        AtomicInteger count = tempViewMap.get(post1.getId());
         assertThat(count).isNotNull();
         assertThat(count.get()).isEqualTo(2);
     }
 
     @Test
     @DisplayName("updateViewCountsToDB를 호출하면 DB 조회수에 반영되고 tempViewCount는 초기화된다.")
-    void updateViewCountsToDBTest() {
+    void updateViewCountsToDBTest() throws Exception {
         topViewRepositoryImplV3.returnPost(post2.getId());
         topViewRepositoryImplV3.returnPost(post2.getId());
 
         topViewRepositoryImplV3.updateCacheWithDBAutomatically(); // updateViewCountsToDB 포함
 
+        Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
         Post updatedPost = postRepository.findById(post2.getId());
         assertThat(updatedPost.getViewCount()).isEqualTo(5L); // 기존 3L + 2
-
-        assertThat(TopViewRepositoryImplV3.getTempViewCount()).isEmpty();
+        assertThat(tempViewMap).isEmpty();
     }
 
     @Test
@@ -108,6 +113,20 @@ class TopViewRepositoryImplV3Test {
         assertThat(popularPosts.values())
                 .extracting("content", "viewCount")
                 .contains(tuple("애플 분석", 5L), tuple("아이폰 전망", 3L));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Long, AtomicInteger> accessTempViewCountByReflection() throws Exception {
+        var method = TopViewRepositoryImplV3.class.getDeclaredMethod("getTempViewCountForTest");
+        method.setAccessible(true);
+        return (Map<Long, AtomicInteger>) method.invoke(topViewRepositoryImplV3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private LinkedHashMap<Long, Post> accessCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV3.class.getDeclaredMethod("getCacheForTest");
+        method.setAccessible(true);
+        return (LinkedHashMap<Long, Post>) method.invoke(topViewRepositoryImplV3);
     }
 }
 
