@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class InfluxDBConfig {
 
-    private static final String TOKEN = "e6-KsfPLRr7EgnBAx0I3kTd3ZazkH9EzKlOzvo0flyPaJ79YewAGN6sLW68IHDcE45iK2SzIFz-AI_7S_f2mEA==";
+    private static final String TOKEN = "XSG_SqMvwNIiK43pHyRVzeqr58Ax11Vway8InrTEWA_cX_WtQpfQ2ugH_R1-DKBOiVYHvnK4Bo_61UQ82NHZag==";
     private static final String ORG = "Joosik_Pro";
     private static final String BUCKET = "Joosik_Pro";
 

@@ -3,6 +3,7 @@ package com.joopro.Joosik_Pro.service.StockService;
 import com.influxdb.client.WriteApi;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
+import com.joopro.Joosik_Pro.dto.StockMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -44,6 +45,8 @@ public class DomesticStockLiveService {
 
     @Autowired
     WriteApi writeApi;
+
+    @Autowired private KafkaStockProducer kafkaStockProducer;
 
     @Value("${koreainvest.appkey}")
     private String appKey;
@@ -121,20 +124,16 @@ public class DomesticStockLiveService {
                 public void onMessage(String message) {
                     try {
                         String[] parts = message.split("\\^");
-                        String stockCode = parts[0];
-                        long currentPrice = Long.parseLong(parts[2]);
-                        long volume = Long.parseLong(parts[13]);
+                        StockMessage stockMessage = new StockMessage(
+                                parts[0],                        // code
+                                parts[1],                        // name
+                                Long.parseLong(parts[2]),       // price
+                                Long.parseLong(parts[13]),      // volume
+                                Instant.now().toString()        // timestamp
+                        );
 
-                        // InfluxDB에 데이터 쓰는 코드
-                        Point point = Point
-                                .measurement("stock_price")
-                                .addTag("code", stockCode)
-                                .addField("price", currentPrice)
-                                .addField("volume", volume)
-                                .time(Instant.now(), WritePrecision.MS);
-
-                        writeApi.writePoint(point);
-                        log.info("InfluxDB 저장 완료: {}", stockCode);
+                        kafkaStockProducer.sendStockData(stockMessage);
+                        log.info("Kafka로 JSON 메시지 전송 완료: {}", stockMessage);
                     } catch (Exception e) {
                         log.error("메시지 파싱 또는 저장 오류", e);
                     }
