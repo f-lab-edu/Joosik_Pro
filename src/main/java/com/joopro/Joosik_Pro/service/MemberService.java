@@ -26,7 +26,7 @@ public class MemberService {
     public LoginResponseDto login(String name, String password) {
         List<Member> members = memberRepository.findByName(name);
         if (members.isEmpty()) {
-            return new LoginResponseDto(false, "존재하지 않는 회원입니다.", null);
+            return LoginResponseDto.fail();
         }
 
         // name은 중복 가능성 있으므로 첫 번째 일치 항목 기준
@@ -37,11 +37,10 @@ public class MemberService {
                 for (String roomId : userJoinedRooms) {
                     chatRoomService.subscribe(roomId);
                 }
-                return new LoginResponseDto(true, "로그인 성공", MemberDtoResponse.of(member));
+                return LoginResponseDto.success(MemberDtoResponse.of(member));
             }
         }
-
-        return new LoginResponseDto(false, "비밀번호가 틀렸습니다.", null);
+        return LoginResponseDto.fail();
     }
 
     // 멤버 등록

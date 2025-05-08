@@ -10,4 +10,6 @@ public interface TopViewRepositoryV2 {
 
     Post returnPost(Long postId);
 
+    void updateCacheWithDBAutomatically();
+
 }

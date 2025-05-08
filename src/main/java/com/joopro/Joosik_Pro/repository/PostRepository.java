@@ -118,4 +118,11 @@ public class PostRepository {
                 .getResultList();
     }
 
+    public void increaseViewCount(Long postId, Long count) {
+        em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :count WHERE p.id = :id")
+                .setParameter("count", count)
+                .setParameter("id", postId)
+                .executeUpdate();
+    }
+
 }
