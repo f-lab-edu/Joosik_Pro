@@ -10,7 +10,6 @@ import com.joopro.Joosik_Pro.repository.PostRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import com.joopro.Joosik_Pro.service.MemberService;
 import com.joopro.Joosik_Pro.service.PostService;
-import com.joopro.Joosik_Pro.service.StockService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;

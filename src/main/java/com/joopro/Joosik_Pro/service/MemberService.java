@@ -26,7 +26,7 @@ public class MemberService {
     public LoginResponseDto login(String name, String password) {
         List<Member> members = memberRepository.findByName(name);
         if (members.isEmpty()) {
-            return new LoginResponseDto(false, "존재하지 않는 회원입니다.", null);
+            return LoginResponseDto.fail();
         }
 
         // name은 중복 가능성 있으므로 첫 번째 일치 항목 기준
@@ -37,11 +37,10 @@ public class MemberService {
                 for (String roomId : userJoinedRooms) {
                     chatRoomService.subscribe(roomId);
                 }
-                return new LoginResponseDto(true, "로그인 성공", MemberDtoResponse.of(member));
+                return LoginResponseDto.success(MemberDtoResponse.of(member));
             }
         }
-
-        return new LoginResponseDto(false, "비밀번호가 틀렸습니다.", null);
+        return LoginResponseDto.fail();
     }
 
     // 멤버 등록
@@ -68,17 +67,15 @@ public class MemberService {
     // MemberDtoResponse List 모두 반환
     public List<MemberDtoResponse> getMembers(){
         List<Member> members = memberRepository.findAll();
-        List<MemberDtoResponse> memberDtoResponseList = members.stream()
-                .map(m->MemberDtoResponse.of(m))
+        return members.stream()
+                .map(MemberDtoResponse::of)
                 .toList();
-        return memberDtoResponseList;
     }
 
     // MemberId로 MemberDTOResponse 반환
     public MemberDtoResponse findByMemberId(Long memberId){
         Member member = memberRepository.findOne(memberId);
-        MemberDtoResponse memberDtoResponse = MemberDtoResponse.of(member);
-        return memberDtoResponse;
+        return MemberDtoResponse.of(member);
     }
 
     // MemberID로 Entity 멤버 Entity 반환
@@ -89,10 +86,9 @@ public class MemberService {
     // 멤버 이름으로 MemberDtoResponse List 반환
     public List<MemberDtoResponse> findMemberByName(String name){
         List<Member> members = memberRepository.findByName(name);
-        List<MemberDtoResponse> memberDtoResponseList = members.stream()
-                .map(m->MemberDtoResponse.of(m))
+        return members.stream()
+                .map(MemberDtoResponse::of)
                 .toList();
-        return memberDtoResponseList;
     }
 
 }
