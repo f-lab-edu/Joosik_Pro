@@ -25,6 +25,7 @@ public class Opinion {
     private Post post;
 
     @Setter
+    @Lob
     private String comment;
 
     private long like_sum;

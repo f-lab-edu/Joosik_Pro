@@ -3,7 +3,10 @@ package com.joopro.Joosik_Pro.dto.postdto;
 import com.joopro.Joosik_Pro.domain.Post.SingleStockPost;
 import com.joopro.Joosik_Pro.domain.Post.VsStockPost;
 import lombok.Builder;
+import lombok.Getter;
 
+// 직렬화(Jackson)가 사용할 @Getter
+@Getter
 public class VsStockPostDtoResponse {
 
     private String firstStockName;

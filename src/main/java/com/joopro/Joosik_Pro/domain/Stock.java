@@ -56,4 +56,8 @@ public class Stock {
         memberships.add(stockMembership);
     }
 
+    public void incrementArticleNumber() {
+        this.articleNumber++;
+    }
+
 }
