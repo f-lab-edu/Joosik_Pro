@@ -32,7 +32,7 @@ public class Opinion {
 
     private long dislike_sum;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Opinion parentOpinion; // 부모 댓글
 

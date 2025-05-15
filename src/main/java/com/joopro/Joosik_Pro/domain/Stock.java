@@ -9,6 +9,10 @@ import java.util.List;
 
 @Entity @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA용 기본 생성자, 외부에서 사용 방지
+@Table(name = "stock", indexes = { // @Table 어노테이션 추가
+        @Index(name = "idx_stock_name", columnList = "companyName") // name 컬럼에 인덱스 생성
+})
+// 인덱스 없을 때 type : All 로 테이블 풀 스캔 발생 -> 인덱스 추가
 public class Stock {
 
     @Id @GeneratedValue
