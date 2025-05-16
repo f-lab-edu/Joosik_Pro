@@ -1,10 +1,12 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
+import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
@@ -17,7 +19,6 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-<<<<<<< HEAD
 /**
  * TopViewRepositoryImplV2Test 내에
  * synchronizeTest를 테스트 하기 위한 코드
@@ -58,7 +59,7 @@ class TopViewRepositoryImplV2SyncTest {
     }
 
     @Test
-    void synchronizeTest() {
+    void synchronizeTest() throws Exception {
         int totalThreads = 200;
         ExecutorService executorService = Executors.newFixedThreadPool(20);
         CountDownLatch latch = new CountDownLatch(totalThreads);
@@ -84,9 +85,27 @@ class TopViewRepositoryImplV2SyncTest {
         }
         executorService.shutdown();
 
+        LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+
         assertEquals(1, topViewRepository.getPopularPosts().size());
-        assertEquals(200, topViewRepository.getCache().get(1L).get()); // 캐시에는 200 count 쌓임
-        assertEquals(200, topViewRepository.getReturnCache().get(1L).getViewCount());
+        assertEquals(200, cache.get(1L).get());
+        assertEquals(200, returnCache.get(1L).getViewCount());
         assertEquals(200, postRepository.findById(1L).getViewCount());
     }
+
+    @SuppressWarnings("unchecked")
+    private Map<Long, AtomicInteger> accessCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV2.class.getDeclaredMethod("getCacheForTest");
+        method.setAccessible(true);
+        return (Map<Long, AtomicInteger>) method.invoke(topViewRepository);
+    }
+
+    @SuppressWarnings("unchecked")
+    private LinkedHashMap<Long, Post> accessReturnCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV2.class.getDeclaredMethod("getReturnCacheForTest");
+        method.setAccessible(true);
+        return (LinkedHashMap<Long, Post>) method.invoke(topViewRepository);
+    }
+
 }

@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TopViewSchedulerService {
 
-    private final TopViewRepositoryImplV3 topViewRepositoryImplV3;
+    private final TopViewRepositoryV2 topViewRepositoryV2;
 
     @Scheduled(cron = "${scheduler.topview.cron}")
 //    @Transactional
-    public void updateCacheWithDBAutomatically() {
+    public synchronized void updateCacheWithDBAutomatically() {
         log.info("TopView 캐시 및 DB 업데이트 시작");
-        topViewRepositoryImplV3.init();
+        topViewRepositoryV2.updateCacheWithDBAutomatically();
     }
 
 }

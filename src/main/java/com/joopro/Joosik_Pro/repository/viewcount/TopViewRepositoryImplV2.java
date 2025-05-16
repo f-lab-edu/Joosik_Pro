@@ -33,10 +33,8 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
     private final EntityManager em;
     private final PostRepository postRepository;
 
-    @Getter //테스트용 Getter
-    private LinkedHashMap<Long, AtomicInteger> cache = new LinkedHashMap<>();
-    @Getter // 테스트용 Getter
-    private LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
+    private static LinkedHashMap<Long, AtomicInteger> cache = new LinkedHashMap<>();
+    private static LinkedHashMap<Long, Post> returnCache = new LinkedHashMap<>();
 
     @Transactional
     @PostConstruct
@@ -100,22 +98,9 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
 
     // 데이터베이스에 조회수 연동
     public void updateViewCountsToDB(){
-        log.info("updateViewCountsToDB start");
         for(Map.Entry<Long, AtomicInteger> entry : cache.entrySet()) {
-            log.info("entry.getKey() : {}", entry.getKey());
-            log.info("entry.getValue() : {}", entry.getValue());
-
-            log.info("여기다");
-            List<Post> posts = postRepository.findAll();
-            for (Post go : posts) {
-                System.out.println("여기는 되냐");
-                System.out.println("posts: " + go.getId());
-                System.out.println("posts: " + go.getViewCount());
-            }
             Post post = em.find(Post.class, entry.getKey());
-
             if (post != null) {
-                log.info("updateViewCountsToDB: post.setViewCount: {}", entry.getValue().longValue());
                 post.setViewCount(entry.getValue().longValue());
             }else{
                 log.info("null입니다.");
@@ -135,6 +120,12 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
         this.updateCacheInLocal();
     }
 
+    private static Map<Long, AtomicInteger> getCacheForTest() {
+        return cache;
+    }
 
+    private static LinkedHashMap<Long, Post> getReturnCacheForTest() {
+        return returnCache;
+    }
 
 }

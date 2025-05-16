@@ -8,27 +8,17 @@ import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -41,6 +31,8 @@ class TopViewRepositoryImplV2Test {
     @Autowired private TopViewRepositoryImplV2 topViewRepository;
 
     private Post post1, post2, post3, post4, post5, post6, post7, post8, post9, post10, post11;
+    @Autowired
+    private TopViewRepositoryImplV2 topViewRepositoryImplV2;
 
     @BeforeEach
     void setUp() {
@@ -102,18 +94,20 @@ class TopViewRepositoryImplV2Test {
     }
 
     @AfterEach
-    void reset(){
-        topViewRepository.getCache().clear();
-        topViewRepository.getReturnCache().clear();
+    void reset() throws Exception {
+        LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+        returnCache.clear();
+        cache.clear();
     }
 
     @DisplayName("조회수를 업데이트 할 때 캐시 내에 있다면 캐시 내의 조회수가 증가하고 캐시 내에 없다면 Post에서 직접 증가한다.")
     @Test
-    void bulkUpdatePostViews() {
+    void bulkUpdatePostViews() throws Exception {
         topViewRepository.bulkUpdatePostViews(post1.getId());
         topViewRepository.bulkUpdatePostViews(post11.getId());
-
-        assertThat(topViewRepository.getCache().get(post11.getId()).get()).isEqualTo(12);
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+        assertThat(cache.get(post11.getId()).get()).isEqualTo(12);
         assertThat(postRepository.findById(post1.getId()).getViewCount()).isEqualTo(2L);
     }
 
@@ -207,6 +201,20 @@ class TopViewRepositoryImplV2Test {
         topViewRepository.updateViewCountsToDB();
         assertThat(postRepository.findById(post11.getId()).getViewCount()).isEqualTo(15L);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Long, AtomicInteger> accessCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV2.class.getDeclaredMethod("getCacheForTest");
+        method.setAccessible(true);
+        return (Map<Long, AtomicInteger>) method.invoke(topViewRepositoryImplV2);
+    }
+
+    @SuppressWarnings("unchecked")
+    private LinkedHashMap<Long, Post> accessReturnCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV2.class.getDeclaredMethod("getReturnCacheForTest");
+        method.setAccessible(true);
+        return (LinkedHashMap<Long, Post>) method.invoke(topViewRepositoryImplV2);
     }
 
 
