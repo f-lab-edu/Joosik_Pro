@@ -24,8 +24,9 @@ import java.util.stream.Collectors;
 public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
 
     private final PostRepository postRepository;
-
+    @Getter
     private static LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
+    @Getter
     private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
 
     @Transactional

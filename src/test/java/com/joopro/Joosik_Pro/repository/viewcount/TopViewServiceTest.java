@@ -3,13 +3,18 @@ package com.joopro.Joosik_Pro.repository.viewcount;
 import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,6 +52,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * 동시성 문제를 해결하려면 인스턴스 단위의 락을 적용하거나 Synchronized 사용을 고민해볼 필요가 있다.
  * 현재 구조에서는 캐시 업데이트 스레드의 속도가 매우 빨라서, DB 반영 전에 스레드가 먼저 완료될 가능성이 크다.
  * 그래도 DB 정합성 측면에서는 데이터를 온전히 반영하고 있기 때문에 완벽한 주기를 맞추지는 못하지만 DB에 정확히 반영되는 것을 확인하였다.
+ *
+ * 업데이트 스레드의 속도가 매우 빠를 때 캐시에 남은 조회수를 확인하는 테스트 작성
+ * DB에 완전히 데이터가 반영되지 않은 경우라도 조회수가 누락되지 않고 캐시에 남은 조회수가 유지되는지 확인하는 테스트 코드를 작성
+ *
  */
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
@@ -98,6 +107,43 @@ public class TopViewServiceTest {
 
     }
 
+    @Test
+    void synchronizeTest2() throws Exception {
+        int totalThreads = 1000;
+        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        CountDownLatch latch = new CountDownLatch(totalThreads);
+        AtomicInteger counter = new AtomicInteger();
+
+        topViewSchedulerService.updateCacheWithDBAutomatically();
+
+        for (int i = 0; i < totalThreads; i++) {
+            executorService.submit(() -> {
+                try {
+                    topViewService.returnPost(1L);
+                    int current = counter.incrementAndGet();
+                    if (current == 100) {
+                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        executorService.shutdown();
+        Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
+
+        assertEquals(1, topViewService.getPopularArticles().size());
+        Long remainCacheValue = tempViewMap.get(1L).longValue();
+        Long dbValue = postRepository.findById(1L).getViewCount();
+        assertEquals(totalThreads, remainCacheValue + dbValue);
+    }
+
     /**
      * 처음에 topViewRepositoryImplV3.init()을 하지 않고 @PostConstruct 안에 있는 init을 사용하면 된다고 생각했지만
      * postConstruct는 처음에 스프링부트(빈)이 뜰 때 작동하므로 @SQL이 적용되기 이전 시점에 작동함 따라서 cache에는 아무꺼도 들어가지 않음
@@ -115,6 +161,13 @@ public class TopViewServiceTest {
                 .containsExactly(
                         tuple("tsla1", 0L)
                 );
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Long, AtomicInteger> accessTempViewCountByReflection() throws Exception {
+        var method = TopViewRepositoryImplV3.class.getDeclaredMethod("getTempViewCountForTest");
+        method.setAccessible(true);
+        return (Map<Long, AtomicInteger>) method.invoke(topViewRepositoryImplV3);
     }
 
 }
