@@ -78,18 +78,25 @@ public class PostRepository {
                 .getResultList();
     }
 
+    // StockService에서 SingleStockPostDtoResponse만드는 구간에 stockName이랑 memberName 받아오는 과정에서 로딩 쿼리 발생 -> N + 1 문제 발생으로 Join Fetch로 미리 가져오기
     // SingleStockPost keyword로 찾기
     public List<SingleStockPost> findSingleStockPostBySimilarContent(String keyword) {
-        return em.createQuery(
-                        "SELECT s FROM SingleStockPost s WHERE s.content LIKE :keyword", SingleStockPost.class)
+        String jpql = "SELECT s FROM SingleStockPost s " +
+                "JOIN FETCH s.member m " +
+                "JOIN FETCH s.stock st " +
+                "WHERE s.content LIKE :keyword";
+        return em.createQuery(jpql, SingleStockPost.class)
                 .setParameter("keyword", "%" + keyword + "%")
                 .getResultList();
     }
 
-    // VsStockPost keyword로 찾기
     public List<VsStockPost> findVsStockPostBySimilarContent(String keyword) {
-        return em.createQuery(
-                        "SELECT v FROM VsStockPost v WHERE v.content LIKE :keyword", VsStockPost.class)
+        String jpql = "SELECT v FROM VsStockPost v " +
+                "JOIN FETCH v.member m " +
+                "JOIN FETCH v.stock1 s1 " +
+                "JOIN FETCH v.stock2 s2 " +
+                "WHERE v.content LIKE :keyword";
+        return em.createQuery(jpql, VsStockPost.class)
                 .setParameter("keyword", "%" + keyword + "%")
                 .getResultList();
     }
@@ -116,6 +123,13 @@ public class PostRepository {
                         "SELECT v FROM VsStockPost v ORDER BY v.viewCount DESC", VsStockPost.class)
                 .setMaxResults(10)
                 .getResultList();
+    }
+
+    public void increaseViewCount(Long postId, Long count) {
+        em.createQuery("UPDATE Post p SET p.viewCount = p.viewCount + :count WHERE p.id = :id")
+                .setParameter("count", count)
+                .setParameter("id", postId)
+                .executeUpdate();
     }
 
 }

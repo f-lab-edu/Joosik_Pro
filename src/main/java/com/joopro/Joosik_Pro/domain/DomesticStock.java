@@ -36,7 +36,8 @@ public class DomesticStock {
     private Double eps;
 
     @Builder
-    public DomesticStock(Double 현재가, Double 최고가, Double 최저가, Double 상한가, Double 하한가, Double from250HighPrice, Double from250LowPrice, Double fromYearHighPrice, Double fromYearLowPrice, Double from52wHighPrice, Double from52wLowPrice, Double per, Double pbr, Double eps) {
+    public DomesticStock(Stock stock, Double 현재가, Double 최고가, Double 최저가, Double 상한가, Double 하한가, Double from250HighPrice, Double from250LowPrice, Double fromYearHighPrice, Double fromYearLowPrice, Double from52wHighPrice, Double from52wLowPrice, Double per, Double pbr, Double eps) {
+        this.stock = stock;
         this.현재가 = 현재가;
         this.최고가 = 최고가;
         this.최저가 = 최저가;

@@ -23,7 +23,8 @@ public class ForeignStock {
     private double 거래량; // 거래량
 
     @Builder
-    public ForeignStock(double 현재가, double 전일종가, double 거래량) {
+    public ForeignStock(Stock stock, double 현재가, double 전일종가, double 거래량) {
+        this.stock = stock;
         this.현재가 = 현재가;
         this.전일종가 = 전일종가;
         this.거래량 = 거래량;
