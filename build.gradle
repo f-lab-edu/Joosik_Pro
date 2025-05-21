@@ -42,9 +42,9 @@ dependencies {
 
 	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:testcontainers'
-	testImplementation 'org.mockito:mockito-core'
+
+	implementation 'org.springframework.kafka:spring-kafka'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.named('test') {

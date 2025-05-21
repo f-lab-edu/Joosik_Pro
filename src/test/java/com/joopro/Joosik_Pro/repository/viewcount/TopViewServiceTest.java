@@ -2,6 +2,9 @@ package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
+import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.MemberService;
+import com.joopro.Joosik_Pro.service.PostService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
