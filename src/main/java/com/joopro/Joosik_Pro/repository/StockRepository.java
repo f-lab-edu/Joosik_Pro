@@ -34,7 +34,7 @@ public class StockRepository {
 
     // 회사이름으로 Stock 찾기
     public Stock findStockByCompanyName(String name){
-        return em.createQuery("select s from Stock s where s.company_name = :name", Stock.class)
+        return em.createQuery("select s from Stock s where s.companyName = :name", Stock.class)
                 .setParameter("name", name)
                 .getSingleResult();
     }

@@ -29,6 +29,7 @@ public abstract class Post {
     private List<Opinion> opinionList = new ArrayList<>();
 
     @Setter
+    @Lob
     private String content;
 
     private Long viewCount;

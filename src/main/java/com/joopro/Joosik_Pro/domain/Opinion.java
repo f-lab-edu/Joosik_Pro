@@ -25,13 +25,14 @@ public class Opinion {
     private Post post;
 
     @Setter
+    @Lob
     private String comment;
 
     private long like_sum;
 
     private long dislike_sum;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Opinion parentOpinion; // 부모 댓글
 

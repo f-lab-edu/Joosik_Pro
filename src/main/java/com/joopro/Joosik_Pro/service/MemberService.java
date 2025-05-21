@@ -67,17 +67,15 @@ public class MemberService {
     // MemberDtoResponse List 모두 반환
     public List<MemberDtoResponse> getMembers(){
         List<Member> members = memberRepository.findAll();
-        List<MemberDtoResponse> memberDtoResponseList = members.stream()
-                .map(m->MemberDtoResponse.of(m))
+        return members.stream()
+                .map(MemberDtoResponse::of)
                 .toList();
-        return memberDtoResponseList;
     }
 
     // MemberId로 MemberDTOResponse 반환
     public MemberDtoResponse findByMemberId(Long memberId){
         Member member = memberRepository.findOne(memberId);
-        MemberDtoResponse memberDtoResponse = MemberDtoResponse.of(member);
-        return memberDtoResponse;
+        return MemberDtoResponse.of(member);
     }
 
     // MemberID로 Entity 멤버 Entity 반환
@@ -88,10 +86,9 @@ public class MemberService {
     // 멤버 이름으로 MemberDtoResponse List 반환
     public List<MemberDtoResponse> findMemberByName(String name){
         List<Member> members = memberRepository.findByName(name);
-        List<MemberDtoResponse> memberDtoResponseList = members.stream()
-                .map(m->MemberDtoResponse.of(m))
+        return members.stream()
+                .map(MemberDtoResponse::of)
                 .toList();
-        return memberDtoResponseList;
     }
 
 }
