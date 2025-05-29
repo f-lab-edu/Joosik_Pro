@@ -38,6 +38,8 @@ public class Member {
     @OneToMany(mappedBy = "member")
     private List<ChatRoomUser> chatRoomUsers = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FirstComeEventParticipation> Eventparticipations = new ArrayList<>();
 
     @Builder
     public Member(String name, String password, String email){
@@ -63,6 +65,10 @@ public class Member {
 
     public void addChatRoomUsers(ChatRoomUser chatRoomUser){
         chatRoomUsers.add(chatRoomUser);
+    }
+
+    public void addEventParticipation(FirstComeEventParticipation participation) {
+        Eventparticipations.add(participation);
     }
 
 
