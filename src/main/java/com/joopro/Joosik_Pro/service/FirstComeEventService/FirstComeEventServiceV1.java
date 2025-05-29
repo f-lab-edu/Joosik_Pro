@@ -43,18 +43,18 @@ public class FirstComeEventServiceV1 {
     // 이벤트ID → 참여자 순서 리스트 (선착순 보장용)
     private final ConcurrentHashMap<Long, List<Long>> orderedParticipantMap = new ConcurrentHashMap<>();
 
-    public synchronized boolean tryParticipate(Long eventId, Long memberId) {
-        participantMap.putIfAbsent(eventId, ConcurrentHashMap.newKeySet());
-        orderedParticipantMap.putIfAbsent(eventId, new CopyOnWriteArrayList<>());
+    public synchronized boolean tryParticipate(Long stockId, Long memberId) {
+        participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
+        orderedParticipantMap.putIfAbsent(stockId, new CopyOnWriteArrayList<>());
 
-        List<Long> orderedList = orderedParticipantMap.get(eventId);
+        List<Long> orderedList = orderedParticipantMap.get(stockId);
 
         // 선착순 마감 확인
         if (orderedList.size() >= MAX_PARTICIPANTS) {
             return false;
         }
 
-        Set<Long> participantSet = participantMap.get(eventId);
+        Set<Long> participantSet = participantMap.get(stockId);
 
         // 중복 참여 확인
         if (participantSet.contains(memberId)) {
@@ -66,7 +66,7 @@ public class FirstComeEventServiceV1 {
         orderedList.add(memberId);
 
         if (orderedList.size() == MAX_PARTICIPANTS){
-            saveToDatabase(eventId, orderedList);
+            saveToDatabase(stockId, orderedList);
         }
         return true;
     }
@@ -89,16 +89,16 @@ public class FirstComeEventServiceV1 {
         }
     }
 
-    public List<Long> getParticipants(Long eventId) {
-        return orderedParticipantMap.getOrDefault(eventId, Collections.emptyList());
+    public List<Long> getParticipants(Long stockId) {
+        return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
-    public boolean hasParticipated(Long eventId, Long memberId) {
-        return participantMap.getOrDefault(eventId, Collections.emptySet()).contains(memberId);
+    public boolean hasParticipated(Long stockId, Long memberId) {
+        return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
-    public int getCurrentCount(Long eventId) {
-        return orderedParticipantMap.getOrDefault(eventId, Collections.emptyList()).size();
+    public int getCurrentCount(Long stockId) {
+        return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
     }
 }
 
