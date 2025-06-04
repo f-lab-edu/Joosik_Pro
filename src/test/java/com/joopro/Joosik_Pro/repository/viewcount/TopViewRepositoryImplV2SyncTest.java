@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -46,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 필요한 부분만 테스트 가능하게 수정
  */
 
+@TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)

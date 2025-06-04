@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.when;
 /**
  * TopViewRepositoryImplV3 단위 테스트
  */
+@TestPropertySource(locations = "classpath:application-test.properties")
 @ExtendWith(MockitoExtension.class)
 class TopViewRepositoryImplV3ExTest {
 
