@@ -35,7 +35,11 @@ class TopViewRepositoryImplV2Test {
     private TopViewRepositoryImplV2 topViewRepositoryImplV2;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+        returnCache.clear();
+        cache.clear();
         // 실제 엔티티 저장
         Member member = Member.builder()
                 .name("유저A")

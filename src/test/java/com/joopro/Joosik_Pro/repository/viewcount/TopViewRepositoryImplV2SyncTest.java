@@ -49,12 +49,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/sync-test-cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_CLASS)
 class TopViewRepositoryImplV2SyncTest {
 
     @Autowired private TopViewRepositoryImplV2 topViewRepository;
     @Autowired private PostRepository postRepository;
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+        returnCache.clear();
+        cache.clear();
         topViewRepository.updateCacheWithDB();
     }
 
@@ -84,6 +89,8 @@ class TopViewRepositoryImplV2SyncTest {
             throw new RuntimeException(e);
         }
         executorService.shutdown();
+
+        topViewRepository.init();
 
         LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
         Map<Long, AtomicInteger> cache = accessCacheByReflection();
