@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 /**
  * TopViewRepositoryImplV3 단위 테스트
  */
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class TopViewRepositoryImplV3ExTest {
 

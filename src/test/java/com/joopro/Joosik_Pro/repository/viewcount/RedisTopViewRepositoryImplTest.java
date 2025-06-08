@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class RedisTopViewRepositoryImplTest {

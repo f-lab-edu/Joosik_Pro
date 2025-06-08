@@ -10,6 +10,7 @@ import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class TopViewRepositoryImplV1Test {
@@ -101,6 +102,15 @@ class TopViewRepositoryImplV1Test {
     void reset(){
         TopViewRepositoryImplV1.getTempViewCount().clear();
         TopViewRepositoryImplV1.getCacheHit().set(0);
+    }
+
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
+    @Test
+    void contextLoads() {
+        System.out.println("Datasource URL: " + datasourceUrl);
+        // 테스트 로직...
     }
 
     @Test

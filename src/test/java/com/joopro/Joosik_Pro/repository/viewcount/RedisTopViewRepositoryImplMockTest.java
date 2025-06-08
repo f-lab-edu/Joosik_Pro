@@ -22,7 +22,7 @@ import java.util.Map;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 class RedisTopViewRepositoryImplMockTest {

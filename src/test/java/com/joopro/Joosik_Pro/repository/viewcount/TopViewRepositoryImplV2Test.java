@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class TopViewRepositoryImplV2Test {

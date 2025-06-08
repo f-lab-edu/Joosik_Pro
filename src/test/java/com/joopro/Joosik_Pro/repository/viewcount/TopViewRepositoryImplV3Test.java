@@ -28,7 +28,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 /**
  * TopViewRepositoryImplV3 단위 테스트
  */
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class TopViewRepositoryImplV3Test {

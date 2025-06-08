@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 필요한 부분만 테스트 가능하게 수정
  */
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)
