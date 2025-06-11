@@ -11,19 +11,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * lock 대신 AtomicInteger 사용
+ * 멀티스레드를 이용하여 DB에 요청을 보내는 걸 동시에 수행하도록 수정
+ * -> 동시에 DB에 접근, 각각의 요청 Blocking I/O로 접근 -> 성능 저하 유발
+ * -> 여러 스레드에서 동시에 insert 날리기 보다
+ * 배치 insert 사용, 배치를 사용하면 하나의 트랜잭션으로 요청 가능, 묶어서 한 번에 쓰기 가능 -> V5에서 구현
  */
 
 @RequiredArgsConstructor
 @Component
 @org.springframework.transaction.annotation.Transactional(readOnly = true)
-public class FirstComeEventServiceV3 {
+public class FirstComeEventServiceV4 {
     private final FirstComeEventRepositoryV1 eventRepositoryV1;
     private final StockRepository stockRepository;
     private final MemberRepository memberRepository;
@@ -67,26 +75,37 @@ public class FirstComeEventServiceV3 {
         if(current == MAX_PARTICIPANTS){
             saveToDatabase(stockId, participants);
         }
+
         // 순서 기록
         return true;
     }
 
     @Async
-    @Transactional
-    private void saveToDatabase(Long stockId, Set<Long> participantsSet) {
+    public void saveToDatabase(Long stockId, Set<Long> participantsSet) {
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        AtomicInteger i = new AtomicInteger();
         Stock stock = stockRepository.findStockById(stockId);
-        int a = 0;
-        for (Long memberId : participantsSet) {
-            Member member = memberRepository.findOne(memberId);
 
-            FirstComeEventParticipation participation = FirstComeEventParticipation.builder()
-                    .member(member)
-                    .stock(stock)
-                    .participateOrder(a)
-                    .build();
-            a++;
-            eventRepositoryV1.makefirstcomeevent(participation);
+        for (Long memberId : participantsSet) {
+            int order = i.incrementAndGet();
+            executor.submit(() -> {
+                saveParticipantTransactional(stock, memberId, order);
+            });
         }
+
+        executor.shutdown();
+    }
+
+    @Transactional
+    public void saveParticipantTransactional(Stock stock, Long memberId, int order) {
+        Member member = memberRepository.findOne(memberId);
+        FirstComeEventParticipation participation = FirstComeEventParticipation.builder()
+                .member(member)
+                .stock(stock)
+                .participateOrder(order)
+                .build();
+
+        eventRepositoryV1.makefirstcomeevent(participation);
     }
 
 
