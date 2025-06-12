@@ -6,10 +6,11 @@ import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Set;
@@ -18,6 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * lock 대신 AtomicInteger 사용
+ *
+ * Set을 사용해서 내부에서 order를 저장할 수 없다.
+ *
  */
 
 @RequiredArgsConstructor

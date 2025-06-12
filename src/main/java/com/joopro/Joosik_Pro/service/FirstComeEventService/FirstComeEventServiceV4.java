@@ -6,12 +6,11 @@ import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -26,11 +25,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * -> 동시에 DB에 접근, 각각의 요청 Blocking I/O로 접근 -> 성능 저하 유발
  * -> 여러 스레드에서 동시에 insert 날리기 보다
  * 배치 insert 사용, 배치를 사용하면 하나의 트랜잭션으로 요청 가능, 묶어서 한 번에 쓰기 가능 -> V5에서 구현
+ *
+ * Set을 사용해서 내부에서 order를 저장할 수 없다.
+ *
  */
 
 @RequiredArgsConstructor
 @Component
-@org.springframework.transaction.annotation.Transactional(readOnly = true)
+@Transactional(readOnly = true)
 public class FirstComeEventServiceV4 {
     private final FirstComeEventRepositoryV1 eventRepositoryV1;
     private final StockRepository stockRepository;
