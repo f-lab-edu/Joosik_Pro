@@ -4,6 +4,7 @@ import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Set을 사용해서 내부에 order를 저장할 수 없다.
  *
  */
-
+@Primary
 @RequiredArgsConstructor
 @Component
 @Transactional
-public class FirstComeEventServiceV4_2 {
+public class FirstComeEventServiceV4_2 implements FirstComeEventService{
 
     private final StockRepository stockRepository;
     private final AsyncSaveService asyncSaveService;
@@ -40,6 +41,7 @@ public class FirstComeEventServiceV4_2 {
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, AtomicInteger> counterMap = new ConcurrentHashMap<>();
 
+    @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
         counterMap.putIfAbsent(stockId, new AtomicInteger(0));

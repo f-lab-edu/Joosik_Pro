@@ -8,6 +8,7 @@ import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -26,11 +27,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @RequiredArgsConstructor
 @Component
-public class FirstComeEventServiceV2 {
+public class FirstComeEventServiceV2 implements FirstComeEventService{
 
     private final FirstComeEventRepositoryV1 eventRepositoryV1;
     private final StockRepository stockRepository;
     private final MemberRepository memberRepository;
+    private final SaveService saveService;
     private static final int MAX_PARTICIPANTS = 100;
 
     // 이벤트ID → 참여자ID Set (중복 방지용)
@@ -42,6 +44,7 @@ public class FirstComeEventServiceV2 {
     // eventId별 락 객체를 저장하기 위한 맵
     private final ConcurrentHashMap<Long, Object> locks = new ConcurrentHashMap<>();
 
+    @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
         // eventId가 동시에 접근했을 때 값이 없는 걸 확인하고 빈 set이나 list가 동시에 만들어 질 수 있지만 putIfAbsent에서
         // 키를 값과 연결시키는 작업은 원자적으로 수행되므로 동시성을 보장한다.
@@ -73,28 +76,10 @@ public class FirstComeEventServiceV2 {
             orderedList.add(memberId);
 
             if (orderedList.size() == MAX_PARTICIPANTS){
-                saveToDatabase(stockId, orderedList);
+                saveService.saveParticipants(stockId, orderedList);
             }
 
             return true;
-        }
-    }
-
-    @Async
-    @Transactional
-    private void saveToDatabase(Long stockId, List<Long> orderedList) {
-        Stock stock = stockRepository.findStockById(stockId);
-        int a = 0;
-        for (Long memberId : orderedList) {
-            Member member = memberRepository.findOne(memberId);
-
-            FirstComeEventParticipation participation = FirstComeEventParticipation.builder()
-                    .member(member)
-                    .stock(stock)
-                    .participateOrder(a)
-                    .build();
-            a++;
-            eventRepositoryV1.makefirstcomeevent(participation);
         }
     }
 

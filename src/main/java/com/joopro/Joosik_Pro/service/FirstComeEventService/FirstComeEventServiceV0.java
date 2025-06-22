@@ -1,18 +1,16 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
-import java.util.*;
-import java.util.concurrent.*;
 
-import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
-import com.joopro.Joosik_Pro.domain.Member;
-import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * ConcurrentHashSet.netKeySet()는 스레드 안전하다. -> 내부적으로 동시성 처리, 분할 락 사용한다.
@@ -31,7 +29,7 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class FirstComeEventServiceV1 implements FirstComeEventService{
+public class FirstComeEventServiceV0 implements FirstComeEventService{
 
     private static final int MAX_PARTICIPANTS = 100;
     private final FirstComeEventRepositoryV1 eventRepositoryV1;
@@ -46,7 +44,7 @@ public class FirstComeEventServiceV1 implements FirstComeEventService{
     private final ConcurrentHashMap<Long, List<Long>> orderedParticipantMap = new ConcurrentHashMap<>();
 
     @Override
-    public synchronized boolean tryParticipate(Long stockId, Long memberId) {
+    public boolean tryParticipate(Long stockId, Long memberId) {
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
         orderedParticipantMap.putIfAbsent(stockId, new CopyOnWriteArrayList<>());
 
