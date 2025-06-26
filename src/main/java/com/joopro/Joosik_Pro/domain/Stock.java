@@ -25,6 +25,10 @@ public class Stock {
     @OneToMany(mappedBy = "stock", orphanRemoval = true)
     private List<SingleStockPost> singleStockPosts = new ArrayList<>();
 
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FirstComeEventParticipation> eventParticipants = new ArrayList<>();
+
+
     private String companyName;
 
     private int memberNumber;
@@ -58,6 +62,10 @@ public class Stock {
     // StockMemberShip에서 사용할 메서드 memberships리스트에 추가
     public void addStockMemberShip(StockMembership stockMembership){
         memberships.add(stockMembership);
+    }
+
+    public void addEventParticipant(FirstComeEventParticipation participation) {
+        eventParticipants.add(participation);
     }
 
     public void incrementArticleNumber() {
