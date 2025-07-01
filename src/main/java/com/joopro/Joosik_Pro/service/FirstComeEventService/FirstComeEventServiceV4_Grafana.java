@@ -33,47 +33,52 @@ public class FirstComeEventServiceV4_Grafana implements FirstComeEventService {
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v4").increment();
 
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
         counterMap.putIfAbsent(stockId, new AtomicInteger(0));
 
-        return meterRegistry.timer("event.participation.time", "version", "v4").record(() -> {
-            AtomicInteger counter = counterMap.get(stockId);
-            if (counter.get() >= MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.participation.full", "version", "v4").increment();
-                return false;
-            }
+        AtomicInteger counter = counterMap.get(stockId);
+        if (counter.get() >= MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.participation.full", "version", "v4").increment();
+            return false;
+        }
 
-            Set<Long> participants = participantMap.get(stockId);
-            boolean isNew = participants.add(memberId);
-            if (!isNew) {
-                meterRegistry.counter("event.participation.duplicate", "version", "v4").increment();
-                return false;
-            }
+        Set<Long> participants = participantMap.get(stockId);
+        boolean isNew = participants.add(memberId);
+        if (!isNew) {
+            meterRegistry.counter("event.participation.duplicate", "version", "v4").increment();
+            return false;
+        }
 
-            int current = counter.incrementAndGet();
-            if (current > MAX_PARTICIPANTS) {
-                participants.remove(memberId);
-                meterRegistry.counter("event.participation.full", "version", "v4").increment();
-                return false;
-            }
+        int current = counter.incrementAndGet();
+        if (current > MAX_PARTICIPANTS) {
+            participants.remove(memberId);
+            meterRegistry.counter("event.participation.full", "version", "v4").increment();
+            return false;
+        }
 
-            if (current == MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.save.triggered", "version", "v4").increment();
-                saveToDatabaseAsync(stockId, participants);
-            }
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v4").increment();
+            saveToDatabaseAsync(stockId, participants);
+        }
 
-            meterRegistry.counter("event.participation.success", "version", "v4").increment();
+        meterRegistry.counter("event.participation.success", "version", "v4").increment();
 
-            meterRegistry.gauge("event.current.participants",
-                    List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
-                    participants,
-                    Set::size
-            );
+        meterRegistry.gauge("event.current.participants",
+                List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
+                participants,
+                Set::size
+        );
 
-            return true;
-        });
+        long endTime = System.nanoTime();
+        long durationNs = endTime - startTime;
+
+        meterRegistry.timer("event.participation.time", "version", "v4")
+                .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        return true;
     }
 
     public void saveToDatabaseAsync(Long stockId, Set<Long> participantsSet) {

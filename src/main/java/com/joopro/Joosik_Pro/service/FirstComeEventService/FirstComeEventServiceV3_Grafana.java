@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 @Component
 @Transactional
+@Primary
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     private final FirstComeEventRepositoryV1 eventRepositoryV1;
@@ -36,6 +38,7 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v3").increment(); // 시도 수
 
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
@@ -43,48 +46,50 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         counterMap.putIfAbsent(stockId, new AtomicInteger(0));
 
         AtomicInteger counter = counterMap.get(stockId);
+        if (counter.get() >= MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.participation.full", "version", "v3").increment();
+            return false;
+        }
 
-        return meterRegistry.timer("event.participation.time", "version", "v3").record(() -> {
-            if (counter.get() >= MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.participation.full", "version", "v3").increment();
-                return false;
-            }
+        Set<Long> participants = participantMap.get(stockId);
+        List<Long> orderedList = orderedParticipantMap.get(stockId);
 
-            Set<Long> participants = participantMap.get(stockId);
-            List<Long> orderedList = orderedParticipantMap.get(stockId);
+        boolean isNew = participants.add(memberId);
+        if (!isNew) {
+            meterRegistry.counter("event.participation.duplicate", "version", "v3").increment();
+            return false;
+        }
 
-            boolean isNew = participants.add(memberId);
-            if (!isNew) {
-                meterRegistry.counter("event.participation.duplicate", "version", "v3").increment();
-                return false;
-            }
+        orderedList.add(memberId);
+        log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
+        int current = counter.incrementAndGet();
 
-            orderedList.add(memberId);
-//            log.info("orderListV3.size : {}", orderedList.size());
-            int current = counter.incrementAndGet();
+        if (current > MAX_PARTICIPANTS) {
+            participants.remove(memberId); // 롤백
+            meterRegistry.counter("event.participation.full", "version", "v3").increment();
+            return false;
+        }
 
-            if (current > MAX_PARTICIPANTS) {
-                participants.remove(memberId); // 롤백
-                meterRegistry.counter("event.participation.full", "version", "v3").increment();
-                return false;
-            }
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
+            log.info("stockId save : {}", stockId);
+            saveService.saveParticipants(stockId, orderedList);
+        }
 
-            if (current == MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.save.triggered", "version", "v3").increment();
-                saveService.saveParticipants(stockId, orderedList);
-            }
+        meterRegistry.counter("event.participation.success", "version", "v3").increment();
 
-            meterRegistry.counter("event.participation.success", "version", "v3").increment();
+        // 실시간 참여자 수 gauge
+        meterRegistry.gauge("event.current.participants",
+                List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
+                orderedList,
+                List::size
+        );
+        long endTime = System.nanoTime();
+        long durationNs = endTime - startTime;
 
-            // 실시간 참여자 수 gauge
-            meterRegistry.gauge("event.current.participants",
-                    List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
-                    orderedList,
-                    List::size
-            );
-
-            return true;
-        });
+        meterRegistry.timer("event.participation.time", "version", "v3")
+                .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+        return true;
     }
 
     public boolean hasParticipated(Long stockId, Long memberId) {

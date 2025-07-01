@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
-@Primary
 @RequiredArgsConstructor
 @Component
 @Transactional
@@ -34,6 +33,7 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
 
     @Override
     public synchronized boolean tryParticipate(Long stockId, Long memberId) {
+        long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts","version", "v1").increment();
 
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
@@ -55,30 +55,31 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
             return false;
         }
 
-        // 참여 처리 시간 측정
-        boolean result = meterRegistry.timer("event.participation.time", "version", "v1").record(() -> {
-            participantSet.add(memberId);
-            orderedList.add(memberId);
-            log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
+        participantSet.add(memberId);
+        orderedList.add(memberId);
+        log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
 
-            if (orderedList.size() == MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.save.triggered", "version", "v1").increment();
-                log.info("stockId save : {}", stockId);
-                saveService.saveParticipants(stockId, orderedList);
-            }
+        if (orderedList.size() == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v1").increment();
+            log.info("stockId save : {}", stockId);
+            saveService.saveParticipants(stockId, orderedList);
+        }
 
-            // 참여 성공 카운트
-            meterRegistry.counter("event.participation.success", "version", "v1").increment();
+        // 참여 성공 카운트
+        meterRegistry.counter("event.participation.success", "version", "v1").increment();
 
-            meterRegistry.gauge("event.current.participants",
-                    List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
-                    orderedList,
-                    List::size
-            );
+        meterRegistry.gauge("event.current.participants",
+                List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
+                orderedList,
+                List::size
+        );
 
-            return true;
-        });
+        long endTime = System.nanoTime();
+        long durationNs = endTime - startTime;
 
-        return result;
+        meterRegistry.timer("event.participation.time", "version", "v1")
+                .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        return true;
     }
 }

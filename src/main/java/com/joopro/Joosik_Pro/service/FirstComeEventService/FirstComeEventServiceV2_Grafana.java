@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -35,6 +36,7 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v2").increment(); // 총 시도 수
 
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
@@ -42,41 +44,45 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
         Object lock = locks.computeIfAbsent(stockId, k -> new Object());
 
-        return meterRegistry.timer("event.participation.time", "version", "v2").record(() -> {
-            synchronized (lock) {
-                List<Long> orderedList = orderedParticipantMap.get(stockId);
+        synchronized (lock) {
+            List<Long> orderedList = orderedParticipantMap.get(stockId);
 
-                if (orderedList.size() >= MAX_PARTICIPANTS) {
-                    meterRegistry.counter("event.participation.full", "version", "v2").increment();
-                    return false;
-                }
-
-                Set<Long> participantSet = participantMap.get(stockId);
-
-                if (participantSet.contains(memberId)) {
-                    meterRegistry.counter("event.participation.duplicate", "version", "v2").increment();
-                    return false;
-                }
-
-                participantSet.add(memberId);
-                orderedList.add(memberId);
-//                log.info("orderListV2.size : {}", orderedList.size());
-
-                if (orderedList.size() == MAX_PARTICIPANTS) {
-                    meterRegistry.counter("event.save.triggered", "version", "v2").increment();
-                    saveService.saveParticipants(stockId, orderedList);
-                }
-
-                meterRegistry.counter("event.participation.success", "version", "v2").increment();
-
-                meterRegistry.gauge("event.current.participants",
-                        List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
-                        orderedList,
-                        List::size
-                );
-                return true;
+            if (orderedList.size() >= MAX_PARTICIPANTS) {
+                meterRegistry.counter("event.participation.full", "version", "v2").increment();
+                return false;
             }
-        });
+
+            Set<Long> participantSet = participantMap.get(stockId);
+
+            if (participantSet.contains(memberId)) {
+                meterRegistry.counter("event.participation.duplicate", "version", "v2").increment();
+                return false;
+            }
+
+            participantSet.add(memberId);
+            orderedList.add(memberId);
+            log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
+
+            if (orderedList.size() == MAX_PARTICIPANTS) {
+                meterRegistry.counter("event.save.triggered", "version", "v2").increment();
+                log.info("stockId save : {}", stockId);
+                saveService.saveParticipants(stockId, orderedList);
+            }
+
+            meterRegistry.counter("event.participation.success", "version", "v2").increment();
+
+            meterRegistry.gauge("event.current.participants",
+                    List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
+                    orderedList,
+                    List::size
+            );
+            long endTime = System.nanoTime();
+            long durationNs = endTime - startTime;
+
+            meterRegistry.timer("event.participation.time", "version", "v2")
+                    .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+            return true;
+        }
     }
 
     public List<Long> getParticipants(Long stockId) {
