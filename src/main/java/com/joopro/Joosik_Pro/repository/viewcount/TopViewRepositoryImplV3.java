@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,6 +30,8 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Getter
     private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
 
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
     @Transactional
     @PostConstruct
     protected void init() {
@@ -38,20 +41,29 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Transactional
     @Override
     public void updateCacheWithDBAutomatically(){
-        updateCacheWithDB();
+        lock.writeLock().lock();
+        try {
+            updateCacheWithDB();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     public Post returnPost(Long postId) {
-        Post post = cache.get(postId);
-
-        if(post!= null){
-            tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
-            return post;
-        }else{
-            Post post2 = postRepository.findById(postId);
-            post2.increaseViewCount(1L);
-            return post2;
+        lock.readLock().lock();
+        try {
+            Post post = cache.get(postId);
+            if (post != null) {
+                tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
+                return post;
+            } else {
+                Post post2 = postRepository.findById(postId);
+                post2.increaseViewCount(1L);
+                return post2;
+            }
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
