@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.config;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;

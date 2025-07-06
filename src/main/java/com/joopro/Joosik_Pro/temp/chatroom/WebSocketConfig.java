@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.config;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

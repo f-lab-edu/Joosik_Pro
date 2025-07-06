@@ -1,5 +1,6 @@
-package com.joopro.Joosik_Pro.domain;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
+import com.joopro.Joosik_Pro.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

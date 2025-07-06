@@ -1,20 +1,17 @@
-package com.joopro.Joosik_Pro.service.ChatService;
+package com.joopro.Joosik_Pro.temp.chatroom.ChatService;
 
-import com.joopro.Joosik_Pro.domain.ChatRoom;
+import com.joopro.Joosik_Pro.temp.chatroom.ChatRoom;
 import com.joopro.Joosik_Pro.domain.Member;
-import com.joopro.Joosik_Pro.dto.chatroomdto.ChatRoomEnterRequest;
-import com.joopro.Joosik_Pro.dto.chatroomdto.ChatRoomLeaveRequest;
-import com.joopro.Joosik_Pro.dto.memberdto.MemberDtoResponse;
-import com.joopro.Joosik_Pro.repository.ChatRoomRepository;
+import com.joopro.Joosik_Pro.temp.chatroom.chatroomdto.ChatRoomEnterRequest;
+import com.joopro.Joosik_Pro.temp.chatroom.chatroomdto.ChatRoomLeaveRequest;
+import com.joopro.Joosik_Pro.temp.chatroom.ChatRoomRepository;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;

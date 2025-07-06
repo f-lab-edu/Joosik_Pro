@@ -1,11 +1,10 @@
 package com.joopro.Joosik_Pro.domain;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.temp.chatroom.ChatRoomUser;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

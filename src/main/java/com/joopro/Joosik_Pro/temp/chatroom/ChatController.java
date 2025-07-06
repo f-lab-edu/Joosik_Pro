@@ -1,7 +1,6 @@
-package com.joopro.Joosik_Pro.controller;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import com.joopro.Joosik_Pro.dto.ChatMessage;
-import com.joopro.Joosik_Pro.config.RedisPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;

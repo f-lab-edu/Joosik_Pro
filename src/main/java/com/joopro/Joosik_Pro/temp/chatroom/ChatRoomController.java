@@ -1,10 +1,10 @@
-package com.joopro.Joosik_Pro.controller;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import com.joopro.Joosik_Pro.dto.Result;
-import com.joopro.Joosik_Pro.dto.chatroomdto.ChatRoomCreateRequest;
-import com.joopro.Joosik_Pro.dto.chatroomdto.ChatRoomEnterRequest;
-import com.joopro.Joosik_Pro.dto.chatroomdto.ChatRoomLeaveRequest;
-import com.joopro.Joosik_Pro.service.ChatService.ChatRoomService;
+import com.joopro.Joosik_Pro.temp.chatroom.chatroomdto.ChatRoomCreateRequest;
+import com.joopro.Joosik_Pro.temp.chatroom.chatroomdto.ChatRoomEnterRequest;
+import com.joopro.Joosik_Pro.temp.chatroom.chatroomdto.ChatRoomLeaveRequest;
+import com.joopro.Joosik_Pro.temp.chatroom.ChatService.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

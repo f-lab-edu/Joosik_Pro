@@ -55,7 +55,7 @@ public class DomesticStockService {
         return domesticStock;
     }
 
-    private String extractedISIN(String symbol) {
+    public String extractedISIN(String symbol) {
         // 한국어 그대로 넣으면 안돼고 인코딩 해야함
         String encodedSymbol = URLEncoder.encode(symbol, StandardCharsets.UTF_8);
 

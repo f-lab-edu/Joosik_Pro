@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.domain;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

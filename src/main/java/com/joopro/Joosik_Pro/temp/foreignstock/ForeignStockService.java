@@ -1,10 +1,8 @@
-    package com.joopro.Joosik_Pro.service.StockService;
+    package com.joopro.Joosik_Pro.temp.foreignstock;
 
     import com.fasterxml.jackson.core.JsonProcessingException;
     import com.fasterxml.jackson.databind.JsonNode;
     import com.fasterxml.jackson.databind.ObjectMapper;
-    import com.joopro.Joosik_Pro.domain.ForeignStock;
-    import com.joopro.Joosik_Pro.repository.ForeignStockRepository;
     import lombok.RequiredArgsConstructor;
     import lombok.extern.slf4j.Slf4j;
     import org.springframework.beans.factory.annotation.Value;

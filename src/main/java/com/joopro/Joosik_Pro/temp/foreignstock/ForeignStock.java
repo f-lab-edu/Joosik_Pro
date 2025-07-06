@@ -1,5 +1,6 @@
-package com.joopro.Joosik_Pro.domain;
+package com.joopro.Joosik_Pro.temp.foreignstock;
 
+import com.joopro.Joosik_Pro.domain.Stock;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

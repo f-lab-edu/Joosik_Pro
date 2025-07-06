@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.config;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

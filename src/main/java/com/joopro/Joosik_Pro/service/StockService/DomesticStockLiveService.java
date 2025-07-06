@@ -46,7 +46,7 @@ public class DomesticStockLiveService {
     @Autowired
     WriteApi writeApi;
 
-    @Autowired private KafkaStockProducer kafkaStockProducer;
+//    @Autowired private KafkaStockProducer kafkaStockProducer;
 
     @Value("${koreainvest.appkey}")
     private String appKey;
@@ -54,7 +54,7 @@ public class DomesticStockLiveService {
     @Value("${koreainvest.appsecret}")
     private String appSecret;
 
-    @Value("${koreainvest.auth.token}")
+    @Value("${koreainvest.auth.approvalkey}")
     private String approvalKey;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
@@ -95,9 +95,6 @@ public class DomesticStockLiveService {
             clientSymbolsMap.get(assignedClient).add(stockCode);
             symbolToClient.put(stockCode, assignedClient);
 
-            if (assignedClient.isOpen()) {
-                sendSubscribeRequest(assignedClient, stockCode);
-            }
         }
         finally{
             lock.unlock();
@@ -123,17 +120,64 @@ public class DomesticStockLiveService {
                 @Override
                 public void onMessage(String message) {
                     try {
-                        String[] parts = message.split("\\^");
+                        log.info("사이즈는? : {}", symbolToClient.size());
+                        log.info("이렇게 온다 : {}", message);
+
+                        // 1. JSON 메시지 처리 (오류, 승인, 핑퐁 등)
+                        if (message.trim().startsWith("{")) {
+
+//                            JsonNode json = objectMapper.readTree(message);
+//                            String trId = json.path("header").path("tr_id").asText();
+//
+//                            if ("PINGPONG".equals(trId)) {
+//                                // 이걸 그냥 서버에 다시 보내줌
+//                                log.info("PINGPONG 수신 → JSON 그대로 서버에 전송");
+//                                sendSubscribeRequest(this, "035420");
+//                                return;
+//                            }
+
+                            log.info("JSON 제어 메시지 수신: {}", message);
+                            // 필요한 경우 JSON 파싱해서 로그 남기거나 처리
+                            return;
+                        }
+
+                        // 2. 실시간 시세 데이터 처리
+                        // 예: 0|H0STCNT0|001|005930^154651^63800^2^3000^4.93...
+                        String[] outerParts = message.split("\\|");
+                        if (outerParts.length < 4) {
+                            log.warn("예상치 못한 메시지 형식(outerParts): {}", message);
+                            return;
+                        }
+
+                        String dataPart = outerParts[3];
+                        String[] parts = dataPart.split("\\^");
+                        if (parts.length < 14) {
+                            log.warn("예상치 못한 메시지 형식(parts): {}", message);
+                            return;
+                        }
+
                         StockMessage stockMessage = new StockMessage(
                                 parts[0],                        // code
-                                parts[1],                        // name
+                                parts[1],                        // name (timestamp string?)
                                 Long.parseLong(parts[2]),       // price
-                                Long.parseLong(parts[13]),      // volume
                                 Instant.now().toString()        // timestamp
                         );
 
-                        kafkaStockProducer.sendStockData(stockMessage);
+                        log.info("stockMessageName : {}, stockMessagePrice : {}", stockMessage.getName(), stockMessage.getPrice());
+
+                        // kafkaStockProducer.sendStockData(stockMessage);
+
                         log.info("Kafka로 JSON 메시지 전송 완료: {}", stockMessage);
+//                        String[] parts = message.split("\\^");
+//                        StockMessage stockMessage = new StockMessage(
+//                                parts[0],                        // code
+//                                parts[1],                        // name
+//                                Long.parseLong(parts[2]),       // price
+//                                Instant.now().toString()        // timestamp
+//                        );
+//                        log.info("stockMessageName : {}, stockMessagePrice : {}", stockMessage.getName(), stockMessage.getPrice());
+
+//                        kafkaStockProducer.sendStockData(stockMessage);
                     } catch (Exception e) {
                         log.error("메시지 파싱 또는 저장 오류", e);
                     }

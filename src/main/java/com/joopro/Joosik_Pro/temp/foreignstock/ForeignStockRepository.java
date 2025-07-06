@@ -1,6 +1,5 @@
-package com.joopro.Joosik_Pro.repository;
+package com.joopro.Joosik_Pro.temp.foreignstock;
 
-import com.joopro.Joosik_Pro.domain.ForeignStock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,5 @@
-package com.joopro.Joosik_Pro.repository;
+package com.joopro.Joosik_Pro.temp.chatroom;
 
-import com.joopro.Joosik_Pro.domain.ChatRoom;
-import com.joopro.Joosik_Pro.domain.ChatRoomUser;
 import com.joopro.Joosik_Pro.domain.Member;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
