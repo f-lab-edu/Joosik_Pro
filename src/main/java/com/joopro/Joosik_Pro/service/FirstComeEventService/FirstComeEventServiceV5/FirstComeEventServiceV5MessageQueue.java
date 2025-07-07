@@ -1,6 +1,7 @@
-package com.joopro.Joosik_Pro.service.FirstComeEventService;
+package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceV5;
 
 
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FirstComeEventServiceV5MessageQueue implements FirstComeEventService{
+public class FirstComeEventServiceV5MessageQueue implements FirstComeEventService {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final KafkaFirstComeEventProducer kafkaFirstComeEventProducer;

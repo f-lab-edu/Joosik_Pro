@@ -2,16 +2,11 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 import java.util.*;
 import java.util.concurrent.*;
 
-import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
-import com.joopro.Joosik_Pro.domain.Member;
-import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
-import jakarta.transaction.Transactional;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**

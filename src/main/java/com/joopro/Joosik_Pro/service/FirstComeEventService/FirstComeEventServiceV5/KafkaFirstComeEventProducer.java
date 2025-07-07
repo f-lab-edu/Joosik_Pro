@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.service.FirstComeEventService;
+package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceV5;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

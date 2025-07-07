@@ -1,4 +1,4 @@
-package com.joopro.Joosik_Pro.service.FirstComeEventService;
+package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave;
 
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
 import com.joopro.Joosik_Pro.domain.Member;
