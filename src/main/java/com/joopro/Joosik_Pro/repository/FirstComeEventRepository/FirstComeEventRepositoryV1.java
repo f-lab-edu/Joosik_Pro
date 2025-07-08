@@ -23,7 +23,7 @@ public class FirstComeEventRepositoryV1 {
     @Transactional
     public void saveAll(List<FirstComeEventParticipation> participation) {
         for (int i = 0; i < participation.size(); i++) {
-            em.persist(participation.get(i));
+            em.merge(participation.get(i));
             if (i % 100 == 0) {
                 em.flush();
                 em.clear();
