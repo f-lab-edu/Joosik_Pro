@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Set을 사용해서 내부에 order를 저장할 수 없다.
  *
  */
-@Primary
 @RequiredArgsConstructor
 @Component
 @Transactional

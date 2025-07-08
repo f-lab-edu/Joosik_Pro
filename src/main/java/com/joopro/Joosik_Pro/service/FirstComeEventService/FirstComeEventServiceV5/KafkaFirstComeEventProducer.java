@@ -3,12 +3,15 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServic
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KafkaFirstComeEventProducer {
@@ -23,7 +26,13 @@ public class KafkaFirstComeEventProducer {
         sendMap.put("memberId", memberId);
         try {
             String data = objectMapper.writeValueAsString(sendMap);
-            kafkaTemplate.send("first-come-event", memberId.toString(), data);
+            log.info("kafka 호출");
+            kafkaTemplate.send("attend-event-participants", data)
+                    .thenAccept(result -> log.info("Kafka 전송 성공: {}", result))
+                    .exceptionally(ex -> {
+                        log.error("Kafka 전송 실패", ex);
+                        return null;
+                    });
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Kafka JSON 직렬화 실패", e);
         }

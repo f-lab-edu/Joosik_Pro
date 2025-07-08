@@ -4,12 +4,16 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServic
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+@Primary
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class FirstComeEventServiceV5MessageQueue implements FirstComeEventService {
 
     private final StringRedisTemplate stringRedisTemplate;
