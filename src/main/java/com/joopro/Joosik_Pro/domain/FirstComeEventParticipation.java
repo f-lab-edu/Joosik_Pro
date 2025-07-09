@@ -12,7 +12,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FirstComeEventParticipation {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "fc_participation_gen")
+    @TableGenerator(
+            name = "fc_participation_gen",
+            table = "id_generator",
+            pkColumnName = "seq_name",
+            valueColumnName = "next_val",
+            pkColumnValue = "fc_participation_seq",
+            allocationSize = 50
+    )
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

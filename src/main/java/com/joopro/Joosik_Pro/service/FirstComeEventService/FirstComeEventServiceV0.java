@@ -3,6 +3,7 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
