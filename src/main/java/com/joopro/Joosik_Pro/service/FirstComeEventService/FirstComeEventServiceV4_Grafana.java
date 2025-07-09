@@ -2,6 +2,7 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
 import com.joopro.Joosik_Pro.domain.Stock;
 import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.AsyncSaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

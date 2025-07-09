@@ -3,6 +3,7 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 @Component
 @Transactional
-@Primary
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     private final FirstComeEventRepositoryV1 eventRepositoryV1;

@@ -2,6 +2,7 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServic
 
 
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventService;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +19,11 @@ public class FirstComeEventServiceV5MessageQueue implements FirstComeEventServic
 
     private final StringRedisTemplate stringRedisTemplate;
     private final KafkaFirstComeEventProducer kafkaFirstComeEventProducer;
+    private final MeterRegistry meterRegistry;
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        meterRegistry.counter("event.participation.attempts", "version", "v5_1").increment();
         kafkaFirstComeEventProducer.sendParticipationRequest(stockId, memberId);
         return true;
     }
