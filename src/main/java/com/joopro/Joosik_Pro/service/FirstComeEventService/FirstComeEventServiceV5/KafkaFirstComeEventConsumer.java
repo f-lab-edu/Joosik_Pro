@@ -15,6 +15,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class KafkaFirstComeEventConsumer {
         ParticipationMessage data = parseMessage(message);
         Long stockId = data.getStockId();
         Long memberId = data.getMemberId();
+        long startTimeNs = data.getStartTimeNs(); // 받은 시간
 
         String key = "event:" + stockId + ":participants";
 
@@ -74,6 +76,12 @@ public class KafkaFirstComeEventConsumer {
             meterRegistry.counter("event.save.triggered", "version", "v5_1").increment();
             kafkaFirstComeEventProducer.saveParticipationRequest(stockId.toString());
         }
+
+        long endTimeNs = System.nanoTime();
+        long durationNs = endTimeNs - startTimeNs;
+        meterRegistry.timer("event.participation.time", "version", "v5_1")
+                .record(durationNs, TimeUnit.NANOSECONDS);
+
     }
 
 

@@ -1,8 +1,5 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
-import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
@@ -24,9 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Transactional
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
 
@@ -38,6 +32,7 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        log.info("stockId : {}, memberId : {}", stockId, memberId);
         long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v3").increment(); // 시도 수
 
@@ -61,19 +56,12 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         }
 
         orderedList.add(memberId);
-        log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
         int current = counter.incrementAndGet();
 
         if (current > MAX_PARTICIPANTS) {
             participants.remove(memberId); // 롤백
             meterRegistry.counter("event.participation.full", "version", "v3").increment();
             return false;
-        }
-
-        if (current == MAX_PARTICIPANTS) {
-            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
-            log.info("stockId save : {}", stockId);
-            saveService.saveParticipants(stockId, orderedList);
         }
 
         meterRegistry.counter("event.participation.success", "version", "v3").increment();
@@ -84,11 +72,19 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
                 orderedList,
                 List::size
         );
+
         long endTime = System.nanoTime();
         long durationNs = endTime - startTime;
 
         meterRegistry.timer("event.participation.time", "version", "v3")
                 .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
+            log.info("stockId save : {}", stockId);
+            saveService.saveParticipants(stockId, orderedList);
+        }
+
         return true;
     }
 

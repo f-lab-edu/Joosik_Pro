@@ -24,10 +24,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
     private static final int MAX_PARTICIPANTS = 100;
-
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
 
@@ -62,14 +58,6 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
             participantSet.add(memberId);
             orderedList.add(memberId);
-            log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
-
-            if (orderedList.size() == MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.save.triggered", "version", "v2").increment();
-                log.info("stockId save : {}", stockId);
-                saveService.saveParticipants(stockId, orderedList);
-            }
-
             meterRegistry.counter("event.participation.success", "version", "v2").increment();
 
             meterRegistry.gauge("event.current.participants",
@@ -82,6 +70,13 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
             meterRegistry.timer("event.participation.time", "version", "v2")
                     .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+            if (orderedList.size() == MAX_PARTICIPANTS) {
+                meterRegistry.counter("event.save.triggered", "version", "v2").increment();
+                log.info("stockId save : {}", stockId);
+                saveService.saveParticipants(stockId, orderedList);
+            }
+
             return true;
         }
     }

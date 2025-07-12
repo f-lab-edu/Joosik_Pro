@@ -1,14 +1,12 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
-import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -22,9 +20,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
     private static final int MAX_PARTICIPANTS = 100;
 
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
 
@@ -57,13 +52,6 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
 
         participantSet.add(memberId);
         orderedList.add(memberId);
-        log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
-
-        if (orderedList.size() == MAX_PARTICIPANTS) {
-            meterRegistry.counter("event.save.triggered", "version", "v1").increment();
-            log.info("stockId save : {}", stockId);
-            saveService.saveParticipants(stockId, orderedList);
-        }
 
         // 참여 성공 카운트
         meterRegistry.counter("event.participation.success", "version", "v1").increment();
@@ -79,6 +67,12 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
 
         meterRegistry.timer("event.participation.time", "version", "v1")
                 .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        if (orderedList.size() == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v1").increment();
+            log.info("stockId save : {}", stockId);
+            saveService.saveParticipants(stockId, orderedList);
+        }
 
         return true;
     }

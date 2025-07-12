@@ -2,6 +2,7 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServic
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.joopro.Joosik_Pro.dto.ParticipationMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,11 +22,10 @@ public class KafkaFirstComeEventProducer {
 
     // Kafka Producer 클래스 (참여 요청 전송)
     public void sendParticipationRequest(Long stockId, Long memberId) {
-        Map<String, Object> sendMap = new HashMap<>();
-        sendMap.put("stockId", stockId);
-        sendMap.put("memberId", memberId);
+        long startTimeNs = System.nanoTime(); // 측정 시작
+        ParticipationMessage message = new ParticipationMessage(stockId, memberId, startTimeNs);
         try {
-            String data = objectMapper.writeValueAsString(sendMap);
+            String data = objectMapper.writeValueAsString(message);
             log.info("kafka 호출");
             kafkaTemplate.send("attend-event-participants", data)
                     .thenAccept(result -> log.info("Kafka 전송 성공: {}", result))

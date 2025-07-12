@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Primary
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -34,6 +36,7 @@ public class FirstComeEventServiceV4_Grafana implements FirstComeEventService {
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        log.info("stockId : {}, memberId : {}", stockId, memberId);
         long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v4").increment();
 
@@ -60,11 +63,6 @@ public class FirstComeEventServiceV4_Grafana implements FirstComeEventService {
             return false;
         }
 
-        if (current == MAX_PARTICIPANTS) {
-            meterRegistry.counter("event.save.triggered", "version", "v4").increment();
-            saveToDatabaseAsync(stockId, participants);
-        }
-
         meterRegistry.counter("event.participation.success", "version", "v4").increment();
 
         meterRegistry.gauge("event.current.participants",
@@ -78,6 +76,11 @@ public class FirstComeEventServiceV4_Grafana implements FirstComeEventService {
 
         meterRegistry.timer("event.participation.time", "version", "v4")
                 .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v4").increment();
+            saveToDatabaseAsync(stockId, participants);
+        }
 
         return true;
     }

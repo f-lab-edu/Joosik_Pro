@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-@Primary
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -23,6 +22,7 @@ public class FirstComeEventServiceV5MessageQueue implements FirstComeEventServic
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        log.info("stockId : {}, memberId : {}", stockId, memberId);
         meterRegistry.counter("event.participation.attempts", "version", "v5_1").increment();
         kafkaFirstComeEventProducer.sendParticipationRequest(stockId, memberId);
         return true;
