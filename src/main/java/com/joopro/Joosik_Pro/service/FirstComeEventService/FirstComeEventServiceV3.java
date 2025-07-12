@@ -27,9 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @Transactional
 public class FirstComeEventServiceV3 implements FirstComeEventService{
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private static final int MAX_PARTICIPANTS = 100;
 
@@ -82,14 +79,17 @@ public class FirstComeEventServiceV3 implements FirstComeEventService{
         return true;
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return counterMap.getOrDefault(stockId, new AtomicInteger(0)).get();
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }

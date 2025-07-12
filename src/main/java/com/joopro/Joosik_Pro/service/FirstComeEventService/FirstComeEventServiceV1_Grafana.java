@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,4 +77,20 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
 
         return true;
     }
+
+    @Override
+    public List<Long> getParticipants(Long stockId) {
+        return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
+    }
+
+    @Override
+    public boolean hasParticipated(Long stockId, Long memberId) {
+        return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
+    }
+
+    @Override
+    public int getCurrentCount(Long stockId) {
+        return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
+    }
+
 }

@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -66,4 +68,30 @@ public class FirstComeEventServiceV5LuaScript implements FirstComeEventService {
 
         return true;
     }
+
+    @Override
+    public List<Long> getParticipants(Long stockId) {
+        String key = "event:" + stockId + ":participants";
+        Set<String> members = redisTemplate.opsForZSet().range(key, 0, -1);
+
+        if (members == null) {
+            return Collections.emptyList();
+        }
+
+        return members.stream()
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasParticipated(Long stockId, Long memberId) {
+        String key = "event:" + stockId + ":participants";
+        return redisTemplate.opsForZSet().score(key, memberId.toString()) != null;
+    }
+
+    public int getCurrentCount(Long stockId) {
+        String key = "event:" + stockId + ":participants";
+        Long count = redisTemplate.opsForZSet().zCard(key);
+        return count != null ? count.intValue() : 0;
+    }
+
 }

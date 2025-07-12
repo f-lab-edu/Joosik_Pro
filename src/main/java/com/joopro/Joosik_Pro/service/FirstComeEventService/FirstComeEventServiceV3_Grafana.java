@@ -88,14 +88,17 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         return true;
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return counterMap.getOrDefault(stockId, new AtomicInteger(0)).get();
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }

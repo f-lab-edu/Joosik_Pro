@@ -36,4 +36,26 @@ public class FirstComeEventController {
         return Result.ok(participants);
     }
 
+
+    @GetMapping("/api/firstcome/hasParticipated")
+    public Result<Boolean> hasParticipated(
+            @RequestParam Long stockId,
+            @RequestParam Long memberId
+    ) {
+        boolean participated = firstComeEventService.hasParticipated(stockId, memberId);
+        return Result.ok(participated);
+    }
+
+    @GetMapping("/api/firstcome/count")
+    public Result<Integer> getCurrentCount(@RequestParam Long stockId) {
+        int count = firstComeEventService.getCurrentCount(stockId);
+        return Result.ok(count);
+    }
+
+    @GetMapping("/api/firstcome/participantIds")
+    public Result<List<Long>> getParticipantIds(@RequestParam Long stockId) {
+        List<Long> participantIds = firstComeEventService.getParticipants(stockId);
+        return Result.ok(participantIds);
+    }
+
 }

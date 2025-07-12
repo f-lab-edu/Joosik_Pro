@@ -33,9 +33,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FirstComeEventServiceV0 implements FirstComeEventService{
 
     private static final int MAX_PARTICIPANTS = 100;
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
 
     // 이벤트ID → 참여자ID Set (중복 방지용)
@@ -73,14 +70,17 @@ public class FirstComeEventServiceV0 implements FirstComeEventService{
         return true;
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
     }

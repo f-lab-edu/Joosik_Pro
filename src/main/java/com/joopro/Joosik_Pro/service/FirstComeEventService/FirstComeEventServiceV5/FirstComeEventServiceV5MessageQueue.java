@@ -10,6 +10,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +31,20 @@ public class FirstComeEventServiceV5MessageQueue implements FirstComeEventServic
         meterRegistry.counter("event.participation.attempts", "version", "v5_1").increment();
         kafkaFirstComeEventProducer.sendParticipationRequest(stockId, memberId);
         return true;
+    }
+
+    @Override
+    public List<Long> getParticipants(Long stockId) {
+        String key = "event:" + stockId + ":participants";
+        Set<String> members = stringRedisTemplate.opsForZSet().range(key, 0, -1);
+
+        if (members == null) {
+            return Collections.emptyList();
+        }
+
+        return members.stream()
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
     }
 
     public boolean hasParticipated(Long stockId, Long memberId) {
