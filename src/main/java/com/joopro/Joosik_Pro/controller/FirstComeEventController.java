@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.controller;
 
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.dto.Result;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventService;
@@ -19,7 +20,6 @@ import java.util.List;
 public class FirstComeEventController {
 
     private final FirstComeEventService firstComeEventService;
-    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
 
     @PostMapping("/api/firstcome")
     public Result<Boolean> members(
@@ -31,8 +31,8 @@ public class FirstComeEventController {
     }
 
     @GetMapping("/api/firstcome/participants")
-    public Result<List<FirstComeEventParticipation>> getParticipants(@RequestParam Long stockId) {
-        List<FirstComeEventParticipation> participants = firstComeEventRepositoryV1.findAllByStockId(stockId);
+    public Result<List<FirstComeEventParticipationDto>> getParticipants(@RequestParam Long stockId) {
+        List<FirstComeEventParticipationDto> participants = firstComeEventService.getParticipationDtoList(stockId);
         return Result.ok(participants);
     }
 

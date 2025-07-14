@@ -1,5 +1,7 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
@@ -29,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FirstComeEventServiceV3 implements FirstComeEventService{
     private final SaveService saveService;
     private static final int MAX_PARTICIPANTS = 100;
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     // eventId → 참여자 ID Set (중복 확인용)
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
 
@@ -92,6 +94,14 @@ public class FirstComeEventServiceV3 implements FirstComeEventService{
     @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 
 }

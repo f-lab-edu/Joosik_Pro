@@ -1,6 +1,9 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceV5;
 
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
+import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Slf4j
 public class FirstComeEventServiceV5MessageQueue implements FirstComeEventService {
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
 
     private final StringRedisTemplate stringRedisTemplate;
     private final KafkaFirstComeEventProducer kafkaFirstComeEventProducer;
@@ -56,5 +60,13 @@ public class FirstComeEventServiceV5MessageQueue implements FirstComeEventServic
         String key = "event:" + stockId + ":participants";
         Long count = stringRedisTemplate.opsForZSet().zCard(key);
         return count != null ? count.intValue() : 0;
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 }

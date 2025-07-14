@@ -1,5 +1,7 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
@@ -31,7 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 @Component
 public class FirstComeEventServiceV0 implements FirstComeEventService{
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     private static final int MAX_PARTICIPANTS = 100;
     private final SaveService saveService;
 
@@ -83,6 +85,14 @@ public class FirstComeEventServiceV0 implements FirstComeEventService{
     @Override
     public int getCurrentCount(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 }
 

@@ -1,5 +1,8 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
+import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
@@ -20,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Transactional
 public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
     private static final int MAX_PARTICIPANTS = 100;
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
 
@@ -92,5 +95,15 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
     public int getCurrentCount(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
     }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
+    }
+
+
 
 }
