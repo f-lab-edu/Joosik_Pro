@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Primary
 @Repository
 @RequiredArgsConstructor
 public class TopViewRepositoryImplV3_Old implements TopViewRepositoryV2{

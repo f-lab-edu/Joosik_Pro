@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+@Primary
 @Slf4j
 @Repository @RequiredArgsConstructor
 public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
