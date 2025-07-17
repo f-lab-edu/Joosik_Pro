@@ -6,6 +6,7 @@ import com.joopro.Joosik_Pro.repository.StockRepository;
 import com.joopro.Joosik_Pro.service.MemberService;
 import com.joopro.Joosik_Pro.service.PostService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @SpringBootTest
+@Slf4j
 public class TopViewServiceTest {
 
     @Autowired TopViewService topViewService;
@@ -165,6 +167,52 @@ public class TopViewServiceTest {
                         tuple("tsla1", 0L)
                 );
     }
+
+    @Test
+    void synchronizeTest3() throws Exception {
+        List<Long> postIds = List.of(1L,2L,3L,4L,5L,6L,7L,8L,9L,10L);
+        int totalThreads = 1000;
+        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        CountDownLatch latch = new CountDownLatch(totalThreads);
+        AtomicInteger counter = new AtomicInteger();
+
+        topViewSchedulerService.updateCacheWithDBAutomatically();
+
+        for (int i = 0; i < totalThreads; i++) {
+            final Long postId = postIds.get(i % postIds.size());
+            executorService.submit(() -> {
+                try {
+                    topViewService.returnPost(postId);
+                    int current = counter.incrementAndGet();
+                    // **10개마다 flush (동기화 더 자주)**
+                    if (current % 10 == 0) {
+                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        topViewSchedulerService.updateCacheWithDBAutomatically();
+
+        boolean hasError = false;
+        for (long postId : postIds) {
+            long viewCount = postRepository.findById(postId).getViewCount();
+            if (viewCount != 100) {
+                hasError = true;
+            }
+            assertEquals(100, viewCount, "postId " + postId + " 조회수 누락 발생");
+        }
+
+        if (!hasError) {
+            log.info("모든 post의 조회수가 정상적으로 올라감!");
+        }
+    }
+
 
     @SuppressWarnings("unchecked")
     private Map<Long, AtomicInteger> accessTempViewCountByReflection() throws Exception {

@@ -3,33 +3,29 @@ package com.joopro.Joosik_Pro.repository.viewcount;
 import com.joopro.Joosik_Pro.domain.Post.Post;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository @RequiredArgsConstructor
-public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
-
+@Primary
+@Repository
+@RequiredArgsConstructor
+public class TopViewRepositoryImplV3_Old implements TopViewRepositoryV2{
     private final PostRepository postRepository;
     @Getter
     private static LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
     @Getter
     private static final Map<Long, AtomicInteger> tempViewCount = new ConcurrentHashMap<>();
-
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Transactional
     @PostConstruct
@@ -40,29 +36,20 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     @Transactional
     @Override
     public void updateCacheWithDBAutomatically(){
-        lock.writeLock().lock();
-        try {
-            updateCacheWithDB();
-        } finally {
-            lock.writeLock().unlock();
-        }
+        updateCacheWithDB();
     }
 
     @Override
     public Post returnPost(Long postId) {
-        lock.readLock().lock();
-        try {
-            Post post = cache.get(postId);
-            if (post != null) {
-                tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
-                return post;
-            } else {
-                Post post2 = postRepository.findById(postId);
-                post2.increaseViewCount(1L);
-                return post2;
-            }
-        } finally {
-            lock.readLock().unlock();
+        Post post = cache.get(postId);
+
+        if(post!= null){
+            tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
+            return post;
+        }else{
+            Post post2 = postRepository.findById(postId);
+            post2.increaseViewCount(1L);
+            return post2;
         }
     }
 
@@ -103,6 +90,4 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     private static LinkedHashMap<Long, Post> getCacheForTest() {
         return cache;
     }
-
-
 }
