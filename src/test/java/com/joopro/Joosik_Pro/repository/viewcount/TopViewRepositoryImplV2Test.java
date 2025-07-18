@@ -11,6 +11,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class TopViewRepositoryImplV2Test {
@@ -35,7 +38,11 @@ class TopViewRepositoryImplV2Test {
     private TopViewRepositoryImplV2 topViewRepositoryImplV2;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
+        Map<Long, AtomicInteger> cache = accessCacheByReflection();
+        returnCache.clear();
+        cache.clear();
         // 실제 엔티티 저장
         Member member = Member.builder()
                 .name("유저A")
