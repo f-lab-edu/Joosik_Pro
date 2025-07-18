@@ -1,5 +1,7 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
@@ -27,12 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @Transactional
 public class FirstComeEventServiceV3 implements FirstComeEventService{
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private static final int MAX_PARTICIPANTS = 100;
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     // eventId → 참여자 ID Set (중복 확인용)
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
 
@@ -82,16 +81,27 @@ public class FirstComeEventServiceV3 implements FirstComeEventService{
         return true;
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return counterMap.getOrDefault(stockId, new AtomicInteger(0)).get();
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 
 }

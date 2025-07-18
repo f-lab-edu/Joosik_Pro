@@ -1,5 +1,7 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
@@ -31,11 +33,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @RequiredArgsConstructor
 @Component
 public class FirstComeEventServiceV0 implements FirstComeEventService{
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     private static final int MAX_PARTICIPANTS = 100;
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
 
     // 이벤트ID → 참여자ID Set (중복 방지용)
@@ -73,16 +72,27 @@ public class FirstComeEventServiceV0 implements FirstComeEventService{
         return true;
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 }
 

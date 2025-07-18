@@ -8,6 +8,7 @@ import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,24 @@ public class SaveService {
 
     @Transactional
     public void saveParticipants(Long eventId, List<Long> orderedList) {
+        Stock stock = stockRepository.findStockById(eventId);
+        int a = 0;
+        for (Long memberId : orderedList) {
+            Member member = memberRepository.findOne(memberId);
+
+            FirstComeEventParticipation participation = FirstComeEventParticipation.builder()
+                    .member(member)
+                    .stock(stock)
+                    .participateOrder(a++)
+                    .build();
+
+            eventRepositoryV1.makefirstcomeevent(participation);
+        }
+    }
+
+    @Async
+    @Transactional
+    public void asyncSaveParticipants(Long eventId, List<Long> orderedList) {
         Stock stock = stockRepository.findStockById(eventId);
         int a = 0;
         for (Long memberId : orderedList) {

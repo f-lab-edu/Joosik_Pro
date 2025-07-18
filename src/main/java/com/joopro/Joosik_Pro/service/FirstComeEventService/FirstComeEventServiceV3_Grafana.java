@@ -1,8 +1,9 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,23 +22,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 @Component
 @Transactional
-@Primary
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
 
     private static final int MAX_PARTICIPANTS = 100;
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, AtomicInteger> counterMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, List<Long>> orderedParticipantMap = new ConcurrentHashMap<>();
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
+        log.info("stockId : {}, memberId : {}", stockId, memberId);
         long startTime = System.nanoTime();
         meterRegistry.counter("event.participation.attempts", "version", "v3").increment(); // 시도 수
 
@@ -61,19 +59,12 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         }
 
         orderedList.add(memberId);
-        log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
         int current = counter.incrementAndGet();
 
         if (current > MAX_PARTICIPANTS) {
             participants.remove(memberId); // 롤백
             meterRegistry.counter("event.participation.full", "version", "v3").increment();
             return false;
-        }
-
-        if (current == MAX_PARTICIPANTS) {
-            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
-            log.info("stockId save : {}", stockId);
-            saveService.saveParticipants(stockId, orderedList);
         }
 
         meterRegistry.counter("event.participation.success", "version", "v3").increment();
@@ -84,24 +75,43 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
                 orderedList,
                 List::size
         );
+
         long endTime = System.nanoTime();
         long durationNs = endTime - startTime;
 
         meterRegistry.timer("event.participation.time", "version", "v3")
                 .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
+            log.info("stockId save : {}", stockId);
+            saveService.saveParticipants(stockId, orderedList);
+        }
+
         return true;
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return counterMap.getOrDefault(stockId, new AtomicInteger(0)).get();
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 }
 

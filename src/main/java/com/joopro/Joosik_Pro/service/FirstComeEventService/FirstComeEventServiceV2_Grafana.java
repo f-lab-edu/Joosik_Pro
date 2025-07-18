@@ -1,8 +1,11 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
+import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
+import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Primary
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -23,13 +27,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
     private static final int MAX_PARTICIPANTS = 100;
-
-    private final FirstComeEventRepositoryV1 eventRepositoryV1;
-    private final StockRepository stockRepository;
-    private final MemberRepository memberRepository;
     private final SaveService saveService;
     private final MeterRegistry meterRegistry;
-
+    private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, List<Long>> orderedParticipantMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Object> locks = new ConcurrentHashMap<>();
@@ -61,14 +61,6 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
             participantSet.add(memberId);
             orderedList.add(memberId);
-            log.info("stockId : {}, orderListV1.size : {}", stockId, orderedList.size());
-
-            if (orderedList.size() == MAX_PARTICIPANTS) {
-                meterRegistry.counter("event.save.triggered", "version", "v2").increment();
-                log.info("stockId save : {}", stockId);
-                saveService.saveParticipants(stockId, orderedList);
-            }
-
             meterRegistry.counter("event.participation.success", "version", "v2").increment();
 
             meterRegistry.gauge("event.current.participants",
@@ -81,19 +73,37 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
             meterRegistry.timer("event.participation.time", "version", "v2")
                     .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+            if (orderedList.size() == MAX_PARTICIPANTS) {
+                meterRegistry.counter("event.save.triggered", "version", "v2").increment();
+                log.info("stockId save : {}", stockId);
+                saveService.saveParticipants(stockId, orderedList);
+            }
+
             return true;
         }
     }
 
+    @Override
     public List<Long> getParticipants(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Override
     public boolean hasParticipated(Long stockId, Long memberId) {
         return participantMap.getOrDefault(stockId, Collections.emptySet()).contains(memberId);
     }
 
+    @Override
     public int getCurrentCount(Long stockId) {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
+    }
+
+    @Override
+    public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
+        List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
+        return firstComeEventParticipation.stream()
+                .map(FirstComeEventParticipationDto::of)
+                .toList();
     }
 }
