@@ -1,11 +1,7 @@
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jre
 
-WORKDIR /app
+ARG JAR_FILE=build/libs/*.jar
 
-COPY build/libs/Joosik_Pro-0.0.1-SNAPSHOT.jar app.jar
+COPY ${JAR_FILE} app.jar
 
-ENV SPRING_PROFILES_ACTIVE=ec2
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","/app.jar"]
