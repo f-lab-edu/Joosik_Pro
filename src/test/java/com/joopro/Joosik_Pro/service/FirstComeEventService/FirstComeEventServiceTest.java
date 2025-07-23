@@ -1,11 +1,13 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.config.FirstComeEventServiceConfig;
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -25,8 +27,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 })
 public class FirstComeEventServiceTest {
 
-    @Qualifier("v3")
     @Autowired
+    @Qualifier("firstComeEventService")
     private FirstComeEventService eventService;
 
     @Autowired
