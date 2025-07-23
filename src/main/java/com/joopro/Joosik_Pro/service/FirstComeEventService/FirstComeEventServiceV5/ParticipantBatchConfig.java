@@ -65,9 +65,13 @@ public class ParticipantBatchConfig {
     @Bean
     @StepScope
     public ItemReader<ParticipantDto> participantReader(
-            @Value("#{jobParameters['stockId']}") String stockIdStr
+            @Value("#{jobParameters['stockId'] ?: '0'}") String stockIdStr
     ) {
         Long stockId = Long.valueOf(stockIdStr);
+
+        if (stockId == 0) {
+            return new ListItemReader<>(Collections.emptyList());
+        }
 
         String key = "event:" + stockId + ":participants";
 

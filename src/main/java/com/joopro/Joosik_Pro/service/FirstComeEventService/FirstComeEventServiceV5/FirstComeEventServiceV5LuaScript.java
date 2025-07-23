@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Service("Lua")
 @RequiredArgsConstructor
-@Service
 @Transactional
 public class FirstComeEventServiceV5LuaScript implements FirstComeEventService {
     private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;

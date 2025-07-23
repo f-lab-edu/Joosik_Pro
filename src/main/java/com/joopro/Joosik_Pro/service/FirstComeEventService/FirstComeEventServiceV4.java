@@ -6,8 +6,8 @@ import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventR
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Set을 사용해서 내부에 order를 저장할 수 없다.
  */
 
+@Service("v4")
 @RequiredArgsConstructor
-@Component
 @Transactional
 public class FirstComeEventServiceV4 implements FirstComeEventService{
     private final SaveService saveService;

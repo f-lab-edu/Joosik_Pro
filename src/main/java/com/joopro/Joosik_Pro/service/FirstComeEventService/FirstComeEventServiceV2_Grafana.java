@@ -3,15 +3,13 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
 import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +17,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Primary
+@Service("v2")
 @Slf4j
 @RequiredArgsConstructor
-@Component
 @Transactional
 public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 

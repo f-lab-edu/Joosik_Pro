@@ -8,8 +8,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,9 +17,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Service("v1")
 @Slf4j
 @RequiredArgsConstructor
-@Component
 @Transactional
 public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
     private static final int MAX_PARTICIPANTS = 100;
