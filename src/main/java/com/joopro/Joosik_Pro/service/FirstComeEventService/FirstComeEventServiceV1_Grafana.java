@@ -76,7 +76,13 @@ public class FirstComeEventServiceV1_Grafana implements FirstComeEventService{
         if (orderedList.size() == MAX_PARTICIPANTS) {
             meterRegistry.counter("event.save.triggered", "version", "v1").increment();
             log.info("stockId save : {}", stockId);
-            saveService.saveParticipants(stockId, orderedList);
+            try {
+                saveService.saveParticipants(stockId, orderedList);
+            } catch (Exception e) {
+                log.error("저장 실패: stockId={}, error={}", stockId, e.getMessage(), e);
+                meterRegistry.counter("event.save.failed", "version", "v1").increment();
+                return false;
+            }
         }
 
         return true;
