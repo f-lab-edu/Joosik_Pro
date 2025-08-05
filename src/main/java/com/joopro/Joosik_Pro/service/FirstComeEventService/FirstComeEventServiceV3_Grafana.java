@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component("v3")
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+//@Transactional
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     private final SaveService saveService;
@@ -115,6 +115,7 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Transactional
     @Override
     public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
         List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);

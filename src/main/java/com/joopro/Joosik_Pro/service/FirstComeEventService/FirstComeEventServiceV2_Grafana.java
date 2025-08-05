@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component("v2")
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+//@Transactional
 public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
 
     private static final int MAX_PARTICIPANTS = 100;
@@ -105,6 +105,7 @@ public class FirstComeEventServiceV2_Grafana implements FirstComeEventService {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList()).size();
     }
 
+    @Transactional
     @Override
     public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
         List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
