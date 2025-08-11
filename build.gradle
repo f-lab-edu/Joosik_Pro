@@ -35,10 +35,13 @@ dependencies {
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	implementation 'com.influxdb:influxdb-client-java:6.10.0'
+	implementation 'org.redisson:redisson-spring-boot-starter:3.28.0'
 
 	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 

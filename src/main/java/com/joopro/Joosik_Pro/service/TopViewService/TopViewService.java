@@ -1,12 +1,9 @@
 package com.joopro.Joosik_Pro.service.TopViewService;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
-import com.joopro.Joosik_Pro.repository.viewcount.TopViewRepository;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.repository.viewcount.TopViewRepositoryV2;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +26,9 @@ public class TopViewService {
 
     @Transactional
     // cache에 Post 있다면 반환, 조회수도 한번에 올리기 위해서 내부적으로 처리
-    public Post returnPost(Long postId){
-        Post post = topViewRepository.returnPost(postId);
-        return post;
+    public PostDtoResponse returnPost(Long postId){
+        PostDtoResponse postDtoResponse = topViewRepository.returnPost(postId);
+        return postDtoResponse;
     }
 
 
