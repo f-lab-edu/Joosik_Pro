@@ -1,10 +1,14 @@
 package com.joopro.Joosik_Pro.service.FirstComeEventService;
 
+import com.joopro.Joosik_Pro.config.FirstComeEventServiceConfig;
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
 
@@ -15,13 +19,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @SqlGroup({
         @Sql(scripts = "/multi-stock-members.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS),
+        @Sql(scripts = "/multi-stock-members-cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 })
 public class FirstComeEventServiceTest {
 
     @Autowired
+    @Qualifier("firstComeEventService")
     private FirstComeEventService eventService;
 
     @Autowired

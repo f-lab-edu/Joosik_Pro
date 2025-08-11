@@ -8,8 +8,10 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Component("v3")
 @Slf4j
 @RequiredArgsConstructor
-@Component
-@Transactional
+//@Transactional
 public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
 
     private final SaveService saveService;
@@ -85,7 +87,14 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         if (current == MAX_PARTICIPANTS) {
             meterRegistry.counter("event.save.triggered", "version", "v3").increment();
             log.info("stockId save : {}", stockId);
-            saveService.saveParticipants(stockId, orderedList);
+            try {
+                saveService.saveParticipants(stockId, orderedList);
+            } catch (Exception e) {
+                log.error("저장 실패: stockId={}, error={}", stockId, e.getMessage(), e);
+                meterRegistry.counter("event.save.failed", "version", "v1").increment();
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
         }
 
         return true;
@@ -106,6 +115,7 @@ public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Transactional
     @Override
     public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
         List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);

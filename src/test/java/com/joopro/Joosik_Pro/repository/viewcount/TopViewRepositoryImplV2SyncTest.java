@@ -49,7 +49,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
-@TestPropertySource(locations = "classpath:application-test.properties")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(scripts = "/sync-test-cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_CLASS)
 class TopViewRepositoryImplV2SyncTest {
