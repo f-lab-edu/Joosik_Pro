@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -39,16 +40,18 @@ public class TopViewRepositoryImplV3_Old implements TopViewRepositoryV2{
     }
 
     @Override
-    public Post returnPost(Long postId) {
+    public PostDtoResponse returnPost(Long postId) {
         Post post = cache.get(postId);
 
         if(post!= null){
             tempViewCount.computeIfAbsent(postId, id -> new AtomicInteger(0)).incrementAndGet();
-            return post;
+            PostDtoResponse postDtoResponse = PostDtoResponse.of(post);
+            return postDtoResponse;
         }else{
             Post post2 = postRepository.findById(postId);
             post2.increaseViewCount(1L);
-            return post2;
+            PostDtoResponse postDtoResponse = PostDtoResponse.of(post2);
+            return postDtoResponse;
         }
     }
 

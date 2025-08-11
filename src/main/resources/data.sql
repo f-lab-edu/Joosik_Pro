@@ -505,3 +505,41 @@ INSERT INTO member (member_id, name, password, email) VALUES
 (498, 'User498', 'pw498', 'user498@mail.com'),
 (499, 'User499', 'pw499', 'user499@mail.com'),
 (500, 'User500', 'pw500', 'user500@mail.com');
+
+
+-- Insert Posts (SingleStockPost)
+INSERT INTO post (article_id, member_id, content, view_count) VALUES
+    (1, 1, 'tsla1', 1),
+    (2, 1, 'tsla2', 2),
+    (3, 1, 'tsla3', 3),
+    (4, 1, 'tsla4', 4),
+    (5, 1, 'tsla5', 5),
+    (6, 1, 'tsla6', 6),
+    (7, 1, 'tsla7', 7),
+    (8, 1, 'tsla8', 8),
+    (9, 1, 'tsla9', 9),
+    (10, 1, 'tsla10', 10),
+    (11, 1, 'tsla11', 11),
+    (12, 1, 'tsla12', 12),
+    (13, 1, 'tsla13', 13),
+    (14, 1, 'tsla14', 14),
+    (15, 1, 'tsla15', 15);
+
+
+-- Insert SingleStockPost (linking posts to stocks)
+INSERT INTO single_stock_post (article_id, stock_id) VALUES
+    (1, 1),
+    (2, 1),
+    (3, 1),
+    (4, 1),
+    (5, 1),
+    (6, 1),
+    (7, 1),
+    (8, 1),
+    (9, 1),
+    (10, 1),
+    (11, 1),
+    (12, 1),
+    (13, 1),
+    (14, 1),
+    (15, 1);

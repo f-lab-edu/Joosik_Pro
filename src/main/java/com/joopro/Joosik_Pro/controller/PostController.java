@@ -1,12 +1,11 @@
 package com.joopro.Joosik_Pro.controller;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.dto.Result;
-import com.joopro.Joosik_Pro.dto.postdto.CreateSingleStockPostDto;
-import com.joopro.Joosik_Pro.dto.postdto.CreateVsStockPostDto;
-import com.joopro.Joosik_Pro.dto.postdto.SingleStockPostDtoResponse;
-import com.joopro.Joosik_Pro.dto.postdto.VsStockPostDtoResponse;
+import com.joopro.Joosik_Pro.dto.postdto.*;
 import com.joopro.Joosik_Pro.service.PostService;
+import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,14 @@ import java.util.List;
 @RequestMapping("/api/post")
 public class PostController {
 
+    private final TopViewService topViewService;
     private final PostService postService;
+
+    @GetMapping("/{id}")
+    public Result<PostDtoResponse> readPost(@PathVariable("id") Long id){
+        PostDtoResponse postDtoResponse = topViewService.returnPost(id);
+        return Result.ok(postDtoResponse);
+    }
 
     @PostMapping("/single")
     public Result<SingleStockPostDtoResponse> saveSingleStockPost(@RequestBody @Valid CreateSingleStockPostDto createSingleStockPostDto) {

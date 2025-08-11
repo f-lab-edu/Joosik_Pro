@@ -1,6 +1,7 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -53,13 +54,14 @@ public class RedisTopViewRepositoryImpl implements TopViewRepositoryV2 {
     }
 
     @Override
-    public Post returnPost(Long postId) {
+    public PostDtoResponse returnPost(Long postId) {
         Post post = cache.get(postId);
         if(post == null){
             post = postRepository.findById(postId);
         }
         redisTemplate.opsForZSet().incrementScore(POPULAR_POSTS_SET_KEY, String.valueOf(postId), 1.0);
-        return post;
+        PostDtoResponse postDtoResponse = PostDtoResponse.of(post);
+        return postDtoResponse;
     }
 
     @Override

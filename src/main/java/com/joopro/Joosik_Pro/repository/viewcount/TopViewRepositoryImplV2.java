@@ -110,15 +110,15 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
     }
 
 
-    @Scheduled(fixedRate = 600000)
-    private void updateCacheWithDBAutomatically() {
-        this.updateCacheWithDB();
-    }
-
-    @Scheduled(fixedRate = 30000)
-    private void updateCacheInLocalAutomatically(){
-        this.updateCacheInLocal();
-    }
+//    @Scheduled(fixedRate = 600000)
+//    private void updateCacheWithDBAutomatically() {
+//        this.updateCacheWithDB();
+//    }
+//
+//    @Scheduled(fixedRate = 30000)
+//    private void updateCacheInLocalAutomatically(){
+//        this.updateCacheInLocal();
+//    }
 
     private static Map<Long, AtomicInteger> getCacheForTest() {
         return cache;

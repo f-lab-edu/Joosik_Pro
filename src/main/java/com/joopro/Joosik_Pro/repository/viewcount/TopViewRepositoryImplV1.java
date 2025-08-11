@@ -89,15 +89,15 @@ public class TopViewRepositoryImplV1 implements TopViewRepository{
         tempViewCount.clear();
     }
 
-    @Scheduled(fixedRate = 600000)
-    private void updateCacheWithDBAutomatically() {
-        this.updateCacheWithDB();
-    }
-
-    @Scheduled(fixedRate = 30000)
-    private void updateCacheInLocalAutomatically(){
-        this.updateCacheInLocal();
-    }
+//    @Scheduled(fixedRate = 600000)
+//    private void updateCacheWithDBAutomatically() {
+//        this.updateCacheWithDB();
+//    }
+//
+//    @Scheduled(fixedRate = 30000)
+//    private void updateCacheInLocalAutomatically(){
+//        this.updateCacheInLocal();
+//    }
 
 
 }

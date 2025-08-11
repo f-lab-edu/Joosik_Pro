@@ -14,7 +14,6 @@ public class TopViewSchedulerService {
     private final TopViewRepositoryV2 topViewRepositoryV2;
 
     @Scheduled(cron = "${scheduler.topview.cron}")
-//    @Transactional
     public synchronized void updateCacheWithDBAutomatically() {
         log.info("TopView 캐시 및 DB 업데이트 시작");
         topViewRepositoryV2.updateCacheWithDBAutomatically();
