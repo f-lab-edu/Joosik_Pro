@@ -45,9 +45,14 @@ dependencies {
 
 	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
 
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+
 }
 
 tasks.named('test') {

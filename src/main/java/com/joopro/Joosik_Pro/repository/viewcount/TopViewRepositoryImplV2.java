@@ -77,7 +77,7 @@ public class TopViewRepositoryImplV2 implements TopViewRepository{
                 ));
     }
 
-    public void updateCacheWithDB() {
+    public synchronized void updateCacheWithDB() {
         updateViewCountsToDB();
         cache = postRepository.getPopularArticles().stream()
                 .collect(Collectors.toMap(

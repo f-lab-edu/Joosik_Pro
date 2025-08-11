@@ -3,13 +3,15 @@ package com.joopro.Joosik_Pro.service.FirstComeEventService;
 import com.joopro.Joosik_Pro.domain.FirstComeEventParticipation;
 import com.joopro.Joosik_Pro.dto.FirstComeEventParticipationDto;
 import com.joopro.Joosik_Pro.repository.FirstComeEventRepository.FirstComeEventRepositoryV1;
-import com.joopro.Joosik_Pro.repository.MemberRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
-
 import com.joopro.Joosik_Pro.service.FirstComeEventService.FirstComeEventServiceSave.SaveService;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,66 +20,83 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * lock 대신 AtomicInteger 사용
- *
- * Set을 사용해서 내부에서 order를 저장할 수 없다.
- *
- */
-
+@Component("v3")
+@Slf4j
 @RequiredArgsConstructor
-@Component
-@Transactional
-public class FirstComeEventServiceV3 implements FirstComeEventService{
+//@Transactional
+public class FirstComeEventServiceV3_Grafana implements FirstComeEventService {
+
     private final SaveService saveService;
+    private final MeterRegistry meterRegistry;
+
     private static final int MAX_PARTICIPANTS = 100;
     private final FirstComeEventRepositoryV1 firstComeEventRepositoryV1;
-    // eventId → 참여자 ID Set (중복 확인용)
     private final ConcurrentHashMap<Long, Set<Long>> participantMap = new ConcurrentHashMap<>();
-
-    // eventId → 선착순 수 카운터
     private final ConcurrentHashMap<Long, AtomicInteger> counterMap = new ConcurrentHashMap<>();
-
     private final ConcurrentHashMap<Long, List<Long>> orderedParticipantMap = new ConcurrentHashMap<>();
 
     @Override
     public boolean tryParticipate(Long stockId, Long memberId) {
-        // 참여자 Set, 순서 리스트, 카운터 초기화 (동시에 여러 쓰레드가 와도 문제없음)
+        log.info("stockId : {}, memberId : {}", stockId, memberId);
+        long startTime = System.nanoTime();
+        meterRegistry.counter("event.participation.attempts", "version", "v3").increment(); // 시도 수
+
         participantMap.putIfAbsent(stockId, ConcurrentHashMap.newKeySet());
         orderedParticipantMap.putIfAbsent(stockId, new CopyOnWriteArrayList<>());
         counterMap.putIfAbsent(stockId, new AtomicInteger(0));
 
         AtomicInteger counter = counterMap.get(stockId);
         if (counter.get() >= MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.participation.full", "version", "v3").increment();
             return false;
         }
 
         Set<Long> participants = participantMap.get(stockId);
         List<Long> orderedList = orderedParticipantMap.get(stockId);
 
-        // 중복 참여 먼저 확인 → 중복이면 바로 return false
-        // ConcurrentHashMap의 KeySet사용 -> ConcurrentHashMap에서 put()연산 활용 -> 원자적으로 작동
-        // 동시에 들어온다고 하더라도 하나가 true, 다른 건 false가 됨
         boolean isNew = participants.add(memberId);
         if (!isNew) {
+            meterRegistry.counter("event.participation.duplicate", "version", "v3").increment();
             return false;
         }
 
         orderedList.add(memberId);
-
-        // 카운터 증가 → 현재 수가 MAX보다 작을 때만 통과
-        // CAS 활용하는 AtomicInteger 활용
         int current = counter.incrementAndGet();
+
         if (current > MAX_PARTICIPANTS) {
-            // 초과했으면 롤백
-            participants.remove(memberId);
+            participants.remove(memberId); // 롤백
+            meterRegistry.counter("event.participation.full", "version", "v3").increment();
             return false;
         }
 
-        if(current == MAX_PARTICIPANTS){
-            saveService.saveParticipants(stockId, orderedList);
+        meterRegistry.counter("event.participation.success", "version", "v3").increment();
+
+        // 실시간 참여자 수 gauge
+        meterRegistry.gauge("event.current.participants",
+                List.of(io.micrometer.core.instrument.Tag.of("stockId", stockId.toString())),
+                orderedList,
+                List::size
+        );
+
+        long endTime = System.nanoTime();
+        long durationNs = endTime - startTime;
+
+        meterRegistry.timer("event.participation.time", "version", "v3")
+                .record(durationNs, java.util.concurrent.TimeUnit.NANOSECONDS);
+
+        if (current == MAX_PARTICIPANTS) {
+            meterRegistry.counter("event.save.triggered", "version", "v3").increment();
+            log.info("stockId save : {}", stockId);
+            try {
+                saveService.saveParticipants(stockId, orderedList);
+            } catch (Exception e) {
+                log.error("저장 실패: stockId={}, error={}", stockId, e.getMessage(), e);
+                meterRegistry.counter("event.save.failed", "version", "v1").increment();
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return false;
+            }
         }
-        // 순서 기록
+
         return true;
     }
 
@@ -96,6 +115,7 @@ public class FirstComeEventServiceV3 implements FirstComeEventService{
         return orderedParticipantMap.getOrDefault(stockId, Collections.emptyList());
     }
 
+    @Transactional
     @Override
     public List<FirstComeEventParticipationDto> getParticipationDtoList(Long stockId) {
         List<FirstComeEventParticipation> firstComeEventParticipation = firstComeEventRepositoryV1.findAllByStockId(stockId);
@@ -103,5 +123,5 @@ public class FirstComeEventServiceV3 implements FirstComeEventService{
                 .map(FirstComeEventParticipationDto::of)
                 .toList();
     }
-
 }
+

@@ -62,7 +62,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  */
 @TestPropertySource(locations = "classpath:application-test.properties")
-@Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sync-test-cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest
 @Slf4j
 public class TopViewServiceTest {
@@ -73,6 +74,13 @@ public class TopViewServiceTest {
     @Autowired
     PostRepository postRepository;
 
+    @AfterEach
+    void clearCache() throws Exception {
+        LinkedHashMap<Long, Post> cache = accessCacheByReflection();
+        Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
+        cache.clear();
+        tempViewMap.clear();
+    }
 
     @Test
     void synchronizeTest() {
@@ -219,6 +227,13 @@ public class TopViewServiceTest {
         var method = TopViewRepositoryImplV3.class.getDeclaredMethod("getTempViewCountForTest");
         method.setAccessible(true);
         return (Map<Long, AtomicInteger>) method.invoke(topViewRepositoryImplV3);
+    }
+
+    @SuppressWarnings("unchecked")
+    private LinkedHashMap<Long, Post> accessCacheByReflection() throws Exception {
+        var method = TopViewRepositoryImplV3.class.getDeclaredMethod("getCacheForTest");
+        method.setAccessible(true);
+        return (LinkedHashMap<Long, Post>) method.invoke(topViewRepositoryImplV3);
     }
 
 }

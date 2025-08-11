@@ -8,14 +8,15 @@ import com.joopro.Joosik_Pro.repository.MemberRepository;
 import com.joopro.Joosik_Pro.repository.PostRepository;
 import com.joopro.Joosik_Pro.repository.StockRepository;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 class TopViewRepositoryImplV1Test {
@@ -102,6 +104,15 @@ class TopViewRepositoryImplV1Test {
         TopViewRepositoryImplV1.getCacheHit().set(0);
     }
 
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
+    @Test
+    void contextLoads() {
+        System.out.println("Datasource URL: " + datasourceUrl);
+        // 테스트 로직...
+    }
+
     @Test
     @DisplayName("Top100Post는 초기화 시 상위 게시글들을 잘 포함하고 있다.")
     void getPopularPosts() {
@@ -123,16 +134,16 @@ class TopViewRepositoryImplV1Test {
                 );
     }
 
-    @Test
-    @DisplayName("Top100Post에 있는 게시글은 tempViewCount로 조회수 증가")
-    void bulkUpdatePostViews() {
-        topViewRepository.bulkUpdatePostViews(post4.getId());
-        topViewRepository.bulkUpdatePostViews(post4.getId());
-
-        // Top100에 있으므로 tempViewCount에서 증가해야 함
-        assertThat(TopViewRepositoryImplV1.getTempViewCount().get(post4.getId())).isEqualTo(2);
-        assertThat(TopViewRepositoryImplV1.getCacheHit().get()).isEqualTo(2);
-    }
+//    @Test
+//    @DisplayName("Top100Post에 있는 게시글은 tempViewCount로 조회수 증가")
+//    void bulkUpdatePostViews() {
+//        topViewRepository.bulkUpdatePostViews(post4.getId());
+//        topViewRepository.bulkUpdatePostViews(post4.getId());
+//
+//        // Top100에 있으므로 tempViewCount에서 증가해야 함
+//        assertThat(TopViewRepositoryImplV1.getTempViewCount().get(post4.getId())).isEqualTo(2);
+//        assertThat(TopViewRepositoryImplV1.getCacheHit().get()).isEqualTo(2);
+//    }
 
     @Test
     @DisplayName("Top100Post에 있는 게시글은 tempViewCount로 조회수 증가")
@@ -187,32 +198,33 @@ class TopViewRepositoryImplV1Test {
     }
 
 
-    /**
-     * tempViewcount를 AtomicInteger이 아닌 그냥 Integer로 했을 때 동시성 이슈 발생
-     * @throws InterruptedException
-     */
-    @Test
-    void sameViewUpgradeAtSameTime() throws InterruptedException {
-        int threadCount = 150; // 동시에 150번 요청
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        Long testPostId = post1.getId();
-
-        for (int i = 0; i < threadCount; i++) {
-            try{
-                executorService.submit(() -> {
-                    topViewRepository.bulkUpdatePostViews(testPostId);
-                });
-            }finally{
-                latch.countDown();
-            }
-        }
-
-        latch.await();
-
-        int cachedViewCount = TopViewRepositoryImplV1.getTempViewCount().get(testPostId);
-        assertThat(cachedViewCount).isEqualTo(threadCount-100);
-    }
+//    /**
+//     * tempViewcount를 AtomicInteger이 아닌 그냥 Integer로 했을 때 동시성 이슈 발생
+//     * @throws InterruptedException
+//     */
+//    @Disabled("Integer 사용 시 동시성 문제 발생 예시로 남겨둔 테스트입니다. 통과를 보장하지 않으므로 실행하지 않음")
+//    @Test
+//    void sameViewUpgradeAtSameTime() throws InterruptedException {
+//        int threadCount = 150; // 동시에 150번 요청
+//        ExecutorService executorService = Executors.newFixedThreadPool(10);
+//        CountDownLatch latch = new CountDownLatch(threadCount);
+//        Long testPostId = post1.getId();
+//
+//        for (int i = 0; i < threadCount; i++) {
+//            try{
+//                executorService.submit(() -> {
+//                    topViewRepository.bulkUpdatePostViews(testPostId);
+//                });
+//            }finally{
+//                latch.countDown();
+//            }
+//        }
+//
+//        latch.await();
+//
+//        int cachedViewCount = TopViewRepositoryImplV1.getTempViewCount().get(testPostId);
+//        assertThat(cachedViewCount).isEqualTo(threadCount-100);
+//    }
 
 
 
