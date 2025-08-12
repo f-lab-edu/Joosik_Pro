@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-@Primary
 public class RedisTopViewRepositoryImpl_Final implements TopViewRepositoryV2{
     private final PostRepository postRepository;
     private final RedisTemplate<String, String> redisTemplate;
@@ -107,7 +106,7 @@ public class RedisTopViewRepositoryImpl_Final implements TopViewRepositoryV2{
     }
 
     @Override
-    public LinkedHashMap<Long, Post> getPopularPosts() {
+    public LinkedHashMap<Long, PostDtoResponse> getPopularPosts() {
         Set<String> postIdStrSet = redisTemplate.opsForZSet()
                 .reverseRange(POPULAR_POSTS_SET_KEY, 0, 9);
 
@@ -120,25 +119,25 @@ public class RedisTopViewRepositoryImpl_Final implements TopViewRepositoryV2{
                 .collect(Collectors.toList());
 
         // Redis에서 Post 정보 한 번에 꺼내오기
-        LinkedHashMap<Long, Post> result = new LinkedHashMap<>();
+        LinkedHashMap<Long, PostDtoResponse> result = new LinkedHashMap<>();
         for (Long postId : postIds) {
             String redisKey = "post:" + postId;
             String postJson = redisTemplate.opsForValue().get(redisKey);
-            Post post = null;
+            PostDtoResponse postDtoResponse = null;
             if (postJson != null) {
                 try {
-                    post = objectMapper.readValue(postJson, Post.class);
+                    postDtoResponse = objectMapper.readValue(postJson, PostDtoResponse.class);
                 } catch (Exception e) {
                     log.warn("Redis에서 Post JSON 역직렬화 실패, DB 조회로 대체", e);
                 }
             }
             // 없으면 DB에서 조회
-            if (post == null) {
-                post = postRepository.findById(postId);
+            if (postDtoResponse == null) {
+                postDtoResponse = PostDtoResponse.of(postRepository.findById(postId));
             }
-            if (post != null) {
-                result.put(postId, post);
-            }
+
+            result.put(postId, postDtoResponse);
+
         }
         return result;
     }

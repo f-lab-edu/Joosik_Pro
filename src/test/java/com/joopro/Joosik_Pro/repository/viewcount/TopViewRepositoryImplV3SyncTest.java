@@ -1,19 +1,15 @@
 package com.joopro.Joosik_Pro.repository.viewcount;
 
 import com.joopro.Joosik_Pro.domain.Post.Post;
+import com.joopro.Joosik_Pro.dto.PostDtoResponse;
 import com.joopro.Joosik_Pro.repository.PostRepository;
-import com.joopro.Joosik_Pro.repository.StockRepository;
-import com.joopro.Joosik_Pro.service.MemberService;
-import com.joopro.Joosik_Pro.service.PostService;
 import com.joopro.Joosik_Pro.service.TopViewService.TopViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.LinkedHashMap;
@@ -28,6 +24,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * 원래 PostService를 테스트하는 코드였는데
+ *
+ *
+ */
 
 /**
  * TopViewRepositoryImplV2SyncTest에서 언급했듯이 여러 스레드 테스트를 할 때는 @Transactional 적용 때문에 Service 레이어에서 통합테스트가 되어야 한다.
@@ -61,14 +62,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * DB에 완전히 데이터가 반영되지 않은 경우라도 조회수가 누락되지 않고 캐시에 남은 조회수가 유지되는지 확인하는 테스트 코드를 작성
  *
  */
-@TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 @Sql(scripts = "/sync-test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/sync-test-cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SpringBootTest
 @Slf4j
-public class TopViewServiceTest {
+public class TopViewRepositoryImplV3SyncTest {
 
-    @Autowired TopViewService topViewService;
     @Autowired TopViewRepositoryImplV3 topViewRepositoryImplV3;
     @Autowired TopViewSchedulerService topViewSchedulerService;
     @Autowired
@@ -89,15 +89,15 @@ public class TopViewServiceTest {
         CountDownLatch latch = new CountDownLatch(totalThreads);
         AtomicInteger counter = new AtomicInteger();
 
-        topViewSchedulerService.updateCacheWithDBAutomatically();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
         for (int i = 0; i < totalThreads; i++) {
             executorService.submit(() -> {
                 try {
-                    topViewService.returnPost(1L);
+                    topViewRepositoryImplV3.returnPost(1L);
                     int current = counter.incrementAndGet();
                     if (current % 100 == 0) {
-                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
                     }
                 } finally {
                     latch.countDown();
@@ -112,9 +112,10 @@ public class TopViewServiceTest {
         }
         executorService.shutdown();
 
-        topViewSchedulerService.updateCacheWithDBAutomatically();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
-        assertEquals(1, topViewService.getPopularArticles().size());
+
+        assertEquals(10, topViewRepositoryImplV3.getPopularPosts().size());
 //        assertEquals(500, TopViewRepositoryImplV3.getTempViewCount().get(1L));
         assertEquals(500, postRepository.findById(1L).getViewCount());
 
@@ -127,15 +128,15 @@ public class TopViewServiceTest {
         CountDownLatch latch = new CountDownLatch(totalThreads);
         AtomicInteger counter = new AtomicInteger();
 
-        topViewSchedulerService.updateCacheWithDBAutomatically();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
         for (int i = 0; i < totalThreads; i++) {
             executorService.submit(() -> {
                 try {
-                    topViewService.returnPost(1L);
+                    topViewRepositoryImplV3.returnPost(1L);
                     int current = counter.incrementAndGet();
                     if (current == 100) {
-                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
                     }
                 } finally {
                     latch.countDown();
@@ -151,7 +152,7 @@ public class TopViewServiceTest {
         executorService.shutdown();
         Map<Long, AtomicInteger> tempViewMap = accessTempViewCountByReflection();
 
-        assertEquals(1, topViewService.getPopularArticles().size());
+        assertEquals(10, topViewRepositoryImplV3.getPopularPosts().size());
         Long remainCacheValue = tempViewMap.get(1L).longValue();
         Long dbValue = postRepository.findById(1L).getViewCount();
         assertEquals(totalThreads, remainCacheValue + dbValue);
@@ -167,12 +168,22 @@ public class TopViewServiceTest {
     void getPopularArticles(){
         topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
-        List<Post> result = topViewService.getPopularArticles();
-        assertThat(result.size()).isEqualTo(1);
-        assertThat(result)
+        LinkedHashMap<Long,Post> result = topViewRepositoryImplV3.getPopularPosts();
+        assertThat(result.size()).isEqualTo(10);
+        assertThat(result).hasSize(10);
+        assertThat(result.values())
                 .extracting(Post::getContent, Post::getViewCount)
                 .containsExactly(
-                        tuple("tsla1", 0L)
+                        tuple("tsla1", 0L),
+                        tuple("aapl1", 0L),
+                        tuple("amzn1", 0L),
+                        tuple("meta1", 0L),
+                        tuple("goog1", 0L),
+                        tuple("nvda1", 0L),
+                        tuple("nflx1", 0L),
+                        tuple("msft1", 0L),
+                        tuple("amd1", 0L),
+                        tuple("intc1", 0L)
                 );
     }
 
@@ -184,17 +195,17 @@ public class TopViewServiceTest {
         CountDownLatch latch = new CountDownLatch(totalThreads);
         AtomicInteger counter = new AtomicInteger();
 
-        topViewSchedulerService.updateCacheWithDBAutomatically();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
         for (int i = 0; i < totalThreads; i++) {
             final Long postId = postIds.get(i % postIds.size());
             executorService.submit(() -> {
                 try {
-                    topViewService.returnPost(postId);
+                    topViewRepositoryImplV3.returnPost(postId);
                     int current = counter.incrementAndGet();
                     // **10개마다 flush (동기화 더 자주)**
                     if (current % 10 == 0) {
-                        topViewSchedulerService.updateCacheWithDBAutomatically();
+                        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
                     }
                 } finally {
                     latch.countDown();
@@ -205,7 +216,7 @@ public class TopViewServiceTest {
         latch.await();
         executorService.shutdown();
 
-        topViewSchedulerService.updateCacheWithDBAutomatically();
+        topViewRepositoryImplV3.updateCacheWithDBAutomatically();
 
         boolean hasError = false;
         for (long postId : postIds) {

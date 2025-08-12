@@ -19,8 +19,8 @@ public class TopViewService {
     private final TopViewRepositoryV2 topViewRepository;
 
     // 조회수 Top100 Posts 가져오기 리스트에 값 넣기
-    public List<Post> getPopularArticles(){
-        LinkedHashMap<Long, Post> Top100Post =topViewRepository.getPopularPosts();
+    public List<PostDtoResponse> getPopularArticles(){
+        LinkedHashMap<Long, PostDtoResponse> Top100Post =topViewRepository.getPopularPosts();
         return new ArrayList<>(Top100Post.values());
     }
 

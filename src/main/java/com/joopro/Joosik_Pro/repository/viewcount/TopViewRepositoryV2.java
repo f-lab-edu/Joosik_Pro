@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 
 public interface TopViewRepositoryV2 {
 
-    LinkedHashMap<Long, Post> getPopularPosts();
+    LinkedHashMap<Long, PostDtoResponse> getPopularPosts();
 
     PostDtoResponse returnPost(Long postId);
 

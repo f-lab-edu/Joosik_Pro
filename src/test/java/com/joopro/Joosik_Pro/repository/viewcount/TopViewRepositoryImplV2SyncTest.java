@@ -96,7 +96,7 @@ class TopViewRepositoryImplV2SyncTest {
         LinkedHashMap<Long, Post> returnCache = accessReturnCacheByReflection();
         Map<Long, AtomicInteger> cache = accessCacheByReflection();
 
-        assertEquals(1, topViewRepository.getPopularPosts().size());
+        assertEquals(10, topViewRepository.getPopularPosts().size());
         assertEquals(200, cache.get(1L).get());
         assertEquals(200, returnCache.get(1L).getViewCount());
         assertEquals(200, postRepository.findById(1L).getViewCount());

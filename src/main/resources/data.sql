@@ -560,7 +560,7 @@ INSERT INTO member (member_id, name, password, email) VALUES
 (497, 'User497', 'pw497', 'user497@mail.com'),
 (498, 'User498', 'pw498', 'user498@mail.com'),
 (499, 'User499', 'pw499', 'user499@mail.com'),
-(500, 'User500', 'pw500', 'user500@mail.com');
+(500, 'User500', 'pw500', 'user500@mail.com'),
 (501, 'User501', 'pw501', 'user501@mail.com'),
 (502, 'User502', 'pw502', 'user502@mail.com'),
 (503, 'User503', 'pw503', 'user503@mail.com'),

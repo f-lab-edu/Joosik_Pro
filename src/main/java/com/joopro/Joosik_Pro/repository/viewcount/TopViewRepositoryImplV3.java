@@ -19,8 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository @RequiredArgsConstructor
-public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
-
+public class TopViewRepositoryImplV3 {
     private final PostRepository postRepository;
     @Getter
     private static LinkedHashMap<Long, Post> cache = new LinkedHashMap<>();
@@ -36,7 +35,6 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
     }
 
     @Transactional
-    @Override
     public void updateCacheWithDBAutomatically(){
         lock.writeLock().lock();
         try {
@@ -46,7 +44,6 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         }
     }
 
-    @Override
     public PostDtoResponse returnPost(Long postId) {
         lock.readLock().lock();
         try {
@@ -66,7 +63,6 @@ public class TopViewRepositoryImplV3 implements TopViewRepositoryV2{
         }
     }
 
-    @Override
     public LinkedHashMap<Long, Post> getPopularPosts() {
         return cache;
     }
